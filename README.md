@@ -1,38 +1,69 @@
-# Emby Duplicate Movie Finder
+# 🎬 Emby Duplicate Finder
 
-## Overview
-
-This project is a web-based tool designed to help Emby users identify duplicate movies in their media libraries. I created this tool after facing a small yet frustrating issue with duplicates in my Emby setup. There are generally two types of duplicates that this tool helps identify:
-
-1. **Same Movie with Multiple Files**: When you have two or more files of the same movie in your library.
-2. **Misidentified Movies**: When Emby mistakenly identifies one movie as another.
-
-## How It Works
-
-The Emby Duplicate Finder is easy to use and works in any environment. You just need to provide your Emby server's URL and an API key. The tool will then scan your movie libraries for duplicates, comparing movie names and production years.
-
-If duplicates are found, the tool displays them by library and provides the option to download a list showing each movie's name and file path. This makes it easy to review and manage duplicates directly from your browser.
+A lightweight browser-based tool that scans your Emby movie libraries for duplicate files and TVDB ID conflicts.
 
 ## Features
 
-- **Simple Setup**: No complex configurations required. Just enter your Emby server URL and API key.
-- **Cross-Platform**: Works in any environment with a modern web browser.
-- **Duplicate Detection**: Identifies duplicates by comparing movie names and production years.
-- **Downloadable Results**: Provides an option to download a list of duplicates, showing the movie names and file paths.
-- **Open Source**: The project is open-source, allowing anyone to contribute or modify the code as needed.
+- **Same-folder detection** — flags multiple video files sitting in the same folder, even when Emby treats them as separate library items
+- **TVDB duplicate detection** — finds movies that share the same TVDB ID *and* the same folder (true duplicates), while ignoring remakes or sequels that happen to share a metadata ID
+- **IMDb links** — each result includes a direct link to the IMDb page for easy identification
+- **Downloadable report** — export results per library as a `.txt` file
+- **Test connection** — verify your server URL and API key before scanning
 
-## Try It Out
+## Requirements
 
-You can try out the Emby Duplicate Finder here:
-[https://imahmud1.github.io/emby-dupe-finder/](https://imahmud1.github.io/emby-dupe-finder/)
+- An Emby server (tested on Emby 4.x)
+- A valid Emby API key
+- A local web server to serve the files (required to avoid CORS issues)
 
-## Contributing
+## Setup
 
-If you're interested in tinkering with the code or contributing to the project, visit the GitHub repository:
-[https://github.com/imahmud1/emby-dupe-finder](https://github.com/imahmud1/emby-dupe-finder)
+1. Clone or download this repository so you have `index.html` and `script.js` in the same folder.
 
-Feel free to fork the repository, submit issues, or create pull requests!
+2. Serve the files via a local web server. The simplest way is with Python:
 
-## License
+```bash
+python3 -m http.server 8000
+```
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Then open `http://localhost:8000` in your browser.
+
+> ⚠️ Opening `index.html` directly as a `file://` URL will not work due to browser CORS restrictions.
+
+## Usage
+
+1. Enter your **Emby server URL** including port, e.g. `http://192.168.1.10:8096` or `https://emby.example.com:8920`
+2. Enter your **API key** — generate one in Emby under **Settings → API Keys**
+3. Click **🧪 Test Connection** to verify everything is working
+4. Click **🔍 Scan Duplicates** to start the scan
+
+Results are grouped by library and split into two sections:
+
+- **🔁 Same TVDB ID** — movies sharing the same TVDB ID within the same folder
+- **📂 Multiple files in same folder** — folders containing more than one recognised video file
+
+Click **📥 Download TXT** to save the results for a library as a text report.
+
+## How Duplicate Detection Works
+
+### Same-folder detection
+Every movie item's file path (via `MediaSources`) is extracted and grouped by parent folder. Any folder containing more than one video file is flagged.
+
+Recognised video extensions: `mkv`, `mp4`, `avi`, `m4v`, `mov`, `wmv`, `ts`, `m2ts`, `mpg`, `mpeg`, `flv`, `webm`, `iso`, `rmvb`.
+
+### TVDB ID detection
+Movies are grouped by their TVDB provider ID. A group is only flagged as a duplicate if **all items share the same parent folder** — this prevents remakes and sequels (e.g. *The Karate Kid 1984* vs *2010*) from being incorrectly flagged due to TVDB metadata conflicts.
+
+## File Structure
+
+```
+├── index.html   # UI
+├── script.js    # All logic
+└── README.md
+```
+
+## Notes
+
+- The tool is read-only — it does not delete or modify anything on your server
+- Large libraries are fetched in paginated batches of 100 items
+- The scan progress is shown as a percentage while running
