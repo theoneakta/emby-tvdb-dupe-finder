@@ -1,14 +1,14 @@
 # 🎬 Emby Duplicate Finder
 
-A lightweight browser-based tool that scans your Emby movie libraries for duplicate files and TVDB ID conflicts.
+A lightweight browser-based tool that scans your Emby movie libraries for duplicate files.
 
 ## Features
 
-- **Same-folder detection** — flags multiple video files sitting in the same folder, even when Emby treats them as separate library items
-- **TVDB duplicate detection** — finds movies that share the same TVDB ID *and* the same folder (true duplicates), while ignoring remakes or sequels that happen to share a metadata ID
-- **IMDb links** — each result includes a direct link to the IMDb page for easy identification
+- **Same-folder detection** — flags multiple video files in the same folder, including nested subfolders
+- **TVDB duplicate detection** — finds movies sharing the same TVDB ID in the same folder (true duplicates), ignoring remakes or metadata conflicts
+- **Delete via Emby API** — delete duplicates directly from the browser using your Emby credentials
+- **IMDb links** — each result links to the IMDb page for easy identification
 - **Downloadable report** — export results per library as a `.txt` file
-- **Test connection** — verify your server URL and API key before scanning
 
 ## Requirements
 
@@ -18,9 +18,9 @@ A lightweight browser-based tool that scans your Emby movie libraries for duplic
 
 ## Setup
 
-1. Clone or download this repository so you have `index.html` and `script.js` in the same folder.
+1. Place `index.html` and `script.js` in the same folder.
 
-2. Serve the files via a local web server. The simplest way is with Python:
+2. Serve via a local web server:
 
 ```bash
 python3 -m http.server 8000
@@ -28,33 +28,33 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000` in your browser.
 
-> ⚠️ Opening `index.html` directly as a `file://` URL will not work due to browser CORS restrictions.
+> ⚠️ Opening `index.html` directly as a `file://` URL will not work due to CORS restrictions.
 
 ## Usage
 
-1. Enter your **Emby server URL** including port, e.g. `http://192.168.1.10:8096` or `https://emby.example.com:8920`
-2. Enter your **API key** — generate one in Emby under **Settings → API Keys**
-3. Click **🧪 Test Connection** to verify everything is working
-4. Click **🔍 Scan Duplicates** to start the scan
+1. Enter your **Emby server URL** and **API key**
+2. Enter your **admin username and password** — required to enable file deletion
+3. Click **🧪 Test Connection** to verify
+4. Click **🔍 Scan for Duplicates**
 
-Results are grouped by library and split into two sections:
+Results are grouped by library into two sections:
 
 - **🔁 Same TVDB ID** — movies sharing the same TVDB ID within the same folder
-- **📂 Multiple files in same folder** — folders containing more than one recognised video file
+- **📂 Multiple files in same folder** — folders containing more than one video file (including nested subfolders)
 
-Click **📥 Download TXT** to save the results for a library as a text report.
+Check the files you want to remove, then click **🗑️ Delete selected**. A confirmation modal shows exactly what will be deleted before anything happens. After deletion, Emby's library is automatically refreshed.
 
-## How Duplicate Detection Works
+## How duplicate detection works
 
 ### Same-folder detection
-Every movie item's file path (via `MediaSources`) is extracted and grouped by parent folder. Any folder containing more than one video file is flagged.
+Every movie's file path (via `MediaSources`) is grouped by parent folder. Any folder with more than one video file is flagged. A second pass groups by the parent's parent folder to catch files nested one level deeper (e.g. `Fantasia (1940)/Fantasia/movie.avi`).
 
 Recognised video extensions: `mkv`, `mp4`, `avi`, `m4v`, `mov`, `wmv`, `ts`, `m2ts`, `mpg`, `mpeg`, `flv`, `webm`, `iso`, `rmvb`.
 
 ### TVDB ID detection
-Movies are grouped by their TVDB provider ID. A group is only flagged as a duplicate if **all items share the same parent folder** — this prevents remakes and sequels (e.g. *The Karate Kid 1984* vs *2010*) from being incorrectly flagged due to TVDB metadata conflicts.
+Movies are grouped by TVDB provider ID. A group is only flagged if all items share the same parent folder — this prevents remakes (e.g. *The Karate Kid 1984* vs *2010*) from being incorrectly flagged due to metadata conflicts.
 
-## File Structure
+## File structure
 
 ```
 ├── index.html   # UI
@@ -64,6 +64,7 @@ Movies are grouped by their TVDB provider ID. A group is only flagged as a dupli
 
 ## Notes
 
-- The tool is read-only — it does not delete or modify anything on your server
+- The tool is read-only until you provide credentials — scanning never modifies anything
 - Large libraries are fetched in paginated batches of 100 items
-- The scan progress is shown as a percentage while running
+- Deletion uses the Emby user-scoped API (`DELETE /emby/Users/{userId}/Items/{itemId}`) which requires a valid user session
+- After deletion, an Emby library scan is triggered automatically
