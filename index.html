@@ -4,109 +4,904 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Emby Duplicate Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; }
-body { font-family: Arial, sans-serif; max-width: 960px; margin: 0 auto; padding: 20px; background: #f0f2f5; }
-.container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.1); }
-h1 { text-align: center; color: #2c3e50; margin-bottom: 4px; }
-.subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 25px; }
-.section-title { font-size: 12px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: .6px; margin: 20px 0 10px; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.input-group { margin-bottom: 12px; }
-label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 14px; color: #444; }
-label .hint { font-weight: 400; color: #bbb; font-size: 12px; }
-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; transition: border .2s; }
-input:focus { outline: none; border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,.1); }
-hr { border: none; border-top: 1px solid #eee; margin: 20px 0; }
-.btn { display: block; width: 100%; padding: 13px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 600; margin-bottom: 8px; transition: background .2s; }
-.btn-green  { background: #27ae60; color: white; }
-.btn-green:hover  { background: #229954; }
-.btn-purple { background: #8e44ad; color: white; }
-.btn-purple:hover { background: #7d3c98; }
-.btn-blue   { background: #2980b9; color: white; padding: 9px 16px; width: auto; display: inline-block; font-size: 13px; }
-.btn-blue:hover   { background: #2471a3; }
-.btn-red    { background: #c0392b; color: white; padding: 9px 16px; width: auto; display: inline-block; font-size: 13px; }
-.btn-red:hover    { background: #a93226; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Results */
-#results { margin-top: 28px; }
-.library-box { background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; margin-bottom: 16px; border-radius: 10px; animation: fadeIn .4s; }
-@keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
-.lib-header { font-size: 18px; font-weight: 700; color: #2c3e50; margin: 0 0 4px; }
-.lib-sub { font-size: 13px; color: #888; margin: 0 0 16px; }
-.section-label { font-size: 13px; font-weight: 700; color: #555; margin: 14px 0 8px; }
+:root {
+  --bg:         #0d1520;
+  --surface:    #131f2e;
+  --card:       #182231;
+  --border:     #1f3049;
+  --border2:    #243554;
+  --green:      #52b54b;
+  --green-dim:  rgba(82,181,75,.12);
+  --green-glow: rgba(82,181,75,.25);
+  --amber:      #f5a623;
+  --amber-dim:  rgba(245,166,35,.1);
+  --red:        #e05c2e;
+  --red-dim:    rgba(224,92,46,.1);
+  --blue:       #3b8ef3;
+  --blue-dim:   rgba(59,142,243,.1);
+  --text:       #dde6f0;
+  --muted:      #6e8aaa;
+  --radius:     20px;
+  --radius-sm:  12px;
+  --radius-xs:  8px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-image:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(82,181,75,.1) 0%, transparent 65%),
+    radial-gradient(ellipse 35% 25% at 85% 85%, rgba(245,166,35,.06) 0%, transparent 55%);
+}
+
+/* ── HEADER ──────────────────────────────────── */
+header { width: 100%; max-width: 860px; text-align: center; margin-bottom: 36px; }
+
+.logos { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 28px; }
+
+.logo-pill {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 999px; padding: 8px 18px 8px 10px;
+}
+
+.logo-icon {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.logo-icon.emby { background: var(--green); }
+.logo-icon.tvdb  { background: #1a2840; border: 1.5px solid var(--amber); }
+
+.logo-name { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .08em; color: var(--text); }
+.logo-sub  { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.logo-sep  { width: 1px; height: 30px; background: var(--border); }
+
+h1 {
+  font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: 700; letter-spacing: -.025em;
+  background: linear-gradient(115deg, #fff 25%, var(--green) 85%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 10px;
+}
+.subtitle { color: var(--muted); font-size: .95rem; }
+
+/* ── CARD ────────────────────────────────────── */
+.card {
+  width: 100%; max-width: 860px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
+  margin-bottom: 24px;
+}
+
+.section-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.field-label {
+  font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.field-label span { font-weight: 400; text-transform: none; letter-spacing: 0; color: #3a506a; }
+
+.input-wrap { position: relative; }
+.input-wrap .ico {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); pointer-events: none; display: flex;
+}
+
+input[type="text"], input[type="password"] {
+  width: 100%; padding: 13px 14px 13px 42px;
+  background: rgba(255,255,255,.04); border: 1.5px solid var(--border2);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: .92rem;
+  transition: border-color .2s, box-shadow .2s; outline: none;
+}
+input[type="text"]::placeholder, input[type="password"]::placeholder { color: #2d4560; }
+input[type="text"]:focus, input[type="password"]:focus {
+  border-color: var(--green); box-shadow: 0 0 0 3px var(--green-dim);
+}
+
+.remember-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.remember-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--green); flex-shrink: 0; }
+.remember-row label { font-size: .85rem; color: var(--muted); cursor: pointer; }
+.remember-row small { font-size: .75rem; color: #2d4560; }
+
+.divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+.btn-row { display: flex; gap: 12px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 22px; border: none; border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif; font-size: .95rem; font-weight: 600; cursor: pointer;
+  transition: filter .15s, transform .15s, box-shadow .15s; white-space: nowrap;
+}
+.btn:hover  { filter: brightness(1.1); transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+
+.btn-green {
+  flex: 1;
+  background: linear-gradient(135deg, var(--green) 0%, #3da036 100%);
+  color: #fff; box-shadow: 0 4px 20px var(--green-glow);
+}
+.btn-ghost {
+  background: rgba(255,255,255,.05); border: 1.5px solid var(--border2); color: var(--text);
+}
+
+/* ── RESULTS ─────────────────────────────────── */
+#results { width: 100%; max-width: 860px; display: flex; flex-direction: column; gap: 18px; }
+
+.library-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 26px 28px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  opacity: 0; transform: translateY(14px); animation: fadeUp .4s ease forwards;
+}
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+
+.lib-header-row {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 18px;
+}
+.lib-name-group { display: flex; align-items: center; gap: 12px; }
+.lib-icon-box {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--green-dim); display: flex; align-items: center; justify-content: center; color: var(--green);
+}
+.lib-title { font-size: 1.05rem; font-weight: 700; }
+.lib-sub   { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+.pills { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 999px; font-size: .75rem; font-weight: 700; border: 1px solid;
+}
+.pill-amber { background: var(--amber-dim); color: var(--amber); border-color: rgba(245,166,35,.25); }
+.pill-blue  { background: var(--blue-dim);  color: var(--blue);  border-color: rgba(59,142,243,.25); }
+
+.dup-section-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted); margin: 18px 0 10px;
+}
+.dup-section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
 details { margin-bottom: 8px; }
-details summary { cursor: pointer; font-weight: 600; font-size: 14px; color: #2c3e50; padding: 8px 10px; background: white; border-radius: 6px; border: 1px solid #dee2e6; list-style: none; user-select: none; }
+details summary {
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: .88rem; color: var(--text);
+  padding: 10px 14px;
+  background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: var(--radius-xs);
+  list-style: none; user-select: none; transition: background .15s;
+}
 details summary::-webkit-details-marker { display: none; }
-details summary::before { content: '▶  '; font-size: 10px; color: #aaa; }
-details[open] summary::before { content: '▼  '; }
-details ul { padding: 4px 0 0; margin: 0; }
+details summary:hover { background: rgba(255,255,255,.05); }
 
-/* File item */
-.file-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 8px; border-bottom: 1px solid #f0f0f0; list-style: none; }
+.chevron { width: 16px; height: 16px; color: var(--muted); transition: transform .2s; flex-shrink: 0; }
+details[open] .chevron { transform: rotate(90deg); }
+
+details ul { padding: 0; margin: 0; }
+
+.file-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 14px; border-bottom: 1px solid var(--border); list-style: none;
+  transition: background .15s;
+}
 .file-item:last-child { border-bottom: none; }
-.file-item input[type=checkbox] { margin-top: 4px; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; accent-color: #c0392b; }
+.file-item:hover { background: rgba(255,255,255,.025); }
+
+.file-item input[type="checkbox"] {
+  margin-top: 3px; width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; accent-color: var(--red);
+}
 .file-info { flex: 1; min-width: 0; }
-.file-folder { font-size: 11px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
-.file-name { font-size: 14px; font-weight: 700; color: #2c3e50; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.file-name a { font-size: 11px; font-weight: 400; color: #3498db; text-decoration: none; }
+.file-folder {
+  font-size: .72rem; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+  display: flex; align-items: center; gap: 5px;
+}
+.file-name { font-size: .88rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.file-name a { font-size: .72rem; font-weight: 500; color: var(--blue); text-decoration: none; padding: 1px 7px; background: var(--blue-dim); border-radius: 5px; }
 .file-name a:hover { text-decoration: underline; }
-.file-badge { background: #eaf4fd; color: #2980b9; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px; }
-.action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.year-badge { background: rgba(255,255,255,.06); color: var(--muted); font-size: .72rem; font-weight: 600; padding: 1px 8px; border-radius: 6px; }
 
-/* Modal */
-.modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,.7); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal-box { background: white; border-radius: 12px; padding: 28px; max-width: 680px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,.3); }
-.modal-title { font-size: 18px; font-weight: 700; color: #c0392b; margin: 0 0 10px; }
+.action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
 
-/* Loading */
-#loading-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; color:white; font-size:20px; z-index:1000; gap:10px; }
-.hidden { display:none!important; }
+.btn-sm {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: var(--radius-xs);
+  font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 600; cursor: pointer; border: 1.5px solid;
+  transition: filter .15s, transform .15s;
+}
+.btn-sm:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.btn-download { background: var(--green-dim); color: var(--green); border-color: rgba(82,181,75,.3); }
+.btn-delete   { background: var(--red-dim);   color: var(--red);   border-color: rgba(224,92,46,.3); }
+
+.delete-hint {
+  font-size: .78rem; color: var(--muted); background: rgba(255,255,255,.03);
+  border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 9px 14px; margin-top: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ── MODAL ────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(5,10,18,.85);
+  backdrop-filter: blur(8px); z-index: 2000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-box {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 30px; max-width: 680px; width: 100%; max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0,0,0,.6);
+}
+.modal-title { font-size: 1.1rem; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.modal-body  { font-size: .88rem; color: var(--muted); margin-bottom: 16px; }
+
+.delete-item-row {
+  list-style: none; padding: 10px 14px;
+  background: var(--red-dim); border-left: 3px solid var(--red);
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0; margin-bottom: 6px;
+}
+.delete-item-folder { font-size: .72rem; color: var(--muted); margin-bottom: 3px; }
+.delete-item-name   { font-weight: 700; font-size: .88rem; }
+
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 18px; }
+.btn-cancel { background: rgba(255,255,255,.05); color: var(--text); border: 1.5px solid var(--border2); }
+#delete-progress { margin-top: 14px; font-size: .85rem; color: var(--muted); min-height: 20px; }
+
+/* ── LOADING ─────────────────────────────────── */
+#loading-overlay {
+  position: fixed; inset: 0; background: rgba(13,21,32,.88); backdrop-filter: blur(8px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 1000; gap: 16px; transition: opacity .3s;
+}
+#loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
+.spinner-ring {
+  width: 52px; height: 52px; border-radius: 50%;
+  border: 3px solid rgba(82,181,75,.15); border-top-color: var(--green);
+  animation: spin .75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-label { font-size: .88rem; color: var(--muted); font-weight: 500; letter-spacing: .05em; }
+#progress { font-family: 'Space Mono', monospace; font-size: .9rem; color: var(--green); }
+
+/* ── TOAST ───────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 999px; padding: 11px 22px;
+  font-size: .88rem; font-weight: 500;
+  box-shadow: 0 8px 30px rgba(0,0,0,.5);
+  z-index: 3000; opacity: 0; pointer-events: none; transition: opacity .3s; white-space: nowrap;
+}
+#toast.show { opacity: 1; }
+
+/* ── FOOTER ──────────────────────────────────── */
+footer { margin-top: 52px; font-size: .76rem; color: #2d4560; text-align: center; }
+footer a { color: #3a5e80; text-decoration: none; }
+footer a:hover { color: var(--green); }
+
+@media (max-width: 600px) {
+  .card { padding: 22px 18px; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .btn-row { flex-direction: column; }
+  .lib-header-row { flex-direction: column; align-items: flex-start; }
+  .library-box { padding: 20px 16px; }
+}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>🎬 Emby Duplicate Finder</h1>
-  <p class="subtitle">Scans your movie libraries for duplicate files and helps you clean them up.</p>
 
-  <div class="section-title">Emby Connection</div>
+<header>
+  <div class="logos">
+    <div class="logo-pill">
+      <div class="logo-icon emby">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <polygon points="7,5 7,15 15,10" fill="white"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">EMBY</div>
+        <div class="logo-sub">Media Server</div>
+      </div>
+    </div>
+
+    <div class="logo-sep"></div>
+
+    <div class="logo-pill">
+      <div class="logo-icon tvdb">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="2" y="4" width="16" height="11" rx="2" stroke="#f5a623" stroke-width="1.5"/>
+          <rect x="5" y="7" width="10" height="5" rx="1" fill="#f5a623" opacity=".3"/>
+          <line x1="7" y1="15" x2="7" y2="17" stroke="#f5a623" stroke-width="1.5"/>
+          <line x1="13" y1="15" x2="13" y2="17" stroke="#f5a623" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-name">TVDB</div>
+        <div class="logo-sub">Metadata Source</div>
+      </div>
+    </div>
+  </div>
+
+  <h1>Duplicate Finder</h1>
+  <p class="subtitle">Scan your Emby movie libraries, detect duplicates, and clean up files.</p>
+</header>
+
+<div class="card">
+  <div class="section-label">Emby Connection</div>
   <div class="grid-2">
-    <div class="input-group">
-      <label>Server URL</label>
-      <input id="embyServerUrl" placeholder="http://your-emby-server:8096">
+    <div class="field">
+      <div class="field-label">Server URL</div>
+      <div class="input-wrap">
+        <span class="ico">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          </svg>
+        </span>
+        <input type="text" id="embyServerUrl" placeholder="http://192.168.1.10:8096">
+      </div>
     </div>
-    <div class="input-group">
-      <label>API Key</label>
-      <input type="password" id="apiKey" placeholder="Your Emby API key">
+    <div class="field">
+      <div class="field-label">API Key</div>
+      <div class="input-wrap">
+        <span class="ico">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="8" cy="15" r="4"/><path d="M12 15h8M16 13v4"/>
+          </svg>
+        </span>
+        <input type="password" id="apiKey" placeholder="Your Emby API key">
+      </div>
     </div>
-    <div class="input-group">
-      <label>Username <span class="hint">required for deletion</span></label>
-      <input id="embyUsername" placeholder="Admin username">
+    <div class="field">
+      <div class="field-label">Username <span>— required for deletion</span></div>
+      <div class="input-wrap">
+        <span class="ico">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </span>
+        <input type="text" id="embyUsername" placeholder="Admin username">
+      </div>
     </div>
-    <div class="input-group">
-      <label>Password <span class="hint">required for deletion</span></label>
-      <input type="password" id="embyPassword" placeholder="Admin password">
+    <div class="field">
+      <div class="field-label">Password <span>— required for deletion</span></div>
+      <div class="input-wrap">
+        <span class="ico">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </span>
+        <input type="password" id="embyPassword" placeholder="Admin password">
+      </div>
     </div>
   </div>
 
-  <div style="display:flex;align-items:center;gap:8px;margin:4px 0 16px">
-    <input type="checkbox" id="rememberMe" style="width:16px;height:16px;cursor:pointer;accent-color:#27ae60">
-    <label for="rememberMe" style="font-size:14px;color:#555;cursor:pointer;font-weight:400;margin:0">Remember me</label>
-    <span style="font-size:12px;color:#bbb">(credentials saved in browser only)</span>
+  <div class="remember-row">
+    <input type="checkbox" id="rememberMe">
+    <label for="rememberMe">Remember me</label>
+    <small>(credentials saved in browser only)</small>
   </div>
-  <hr>
-  <button class="btn btn-green" onclick="findDuplicates(event)">🔍 Scan for Duplicates</button>
-  <button class="btn btn-purple" onclick="testConnection(event)">🧪 Test Connection</button>
 
-  <div id="results"></div>
+  <div class="divider"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-green" onclick="findDuplicates(event)">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      Scan for Duplicates
+    </button>
+    <button class="btn btn-ghost" onclick="testConnection(event)">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/>
+      </svg>
+      Test Connection
+    </button>
+  </div>
 </div>
+
+<div id="results"></div>
+
+<footer>
+  Open source · <a href="https://github.com/imahmud1/emby-dupe-finder" target="_blank">GitHub</a> · MIT License
+</footer>
 
 <div id="loading-overlay" class="hidden">
-  <span>Scanning…</span><span id="progress">0%</span>
+  <div class="spinner-ring"></div>
+  <div class="loading-label">Scanning libraries…</div>
+  <div id="progress">0%</div>
 </div>
-<script src="script.js"></script>
+
+<div id="toast"></div>
+
 <script>
-  window.addEventListener('DOMContentLoaded', loadCredentials);
+const VIDEO_EXTENSIONS = new Set(['mkv','mp4','avi','m4v','mov','wmv','ts','m2ts','mpg','mpeg','flv','webm','iso','rmvb']);
+
+let _embyUrl = '', _apiKey = '', _userToken = '', _userId = '';
+
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.color = color || 'var(--text)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function saveCredentials() {
+  if (!document.getElementById('rememberMe').checked) { localStorage.removeItem('emby_creds'); return; }
+  localStorage.setItem('emby_creds', JSON.stringify({
+    serverUrl: document.getElementById('embyServerUrl').value.trim(),
+    apiKey:    document.getElementById('apiKey').value.trim(),
+    username:  document.getElementById('embyUsername').value.trim(),
+    password:  document.getElementById('embyPassword').value,
+  }));
+}
+
+function loadCredentials() {
+  try {
+    const saved = localStorage.getItem('emby_creds');
+    if (!saved) return;
+    const c = JSON.parse(saved);
+    if (c.serverUrl) document.getElementById('embyServerUrl').value = c.serverUrl;
+    if (c.apiKey)    document.getElementById('apiKey').value         = c.apiKey;
+    if (c.username)  document.getElementById('embyUsername').value   = c.username;
+    if (c.password)  document.getElementById('embyPassword').value   = c.password;
+    document.getElementById('rememberMe').checked = true;
+  } catch (_) {}
+}
+
+async function testConnection(event) {
+  if (event) event.preventDefault();
+  const url = document.getElementById('embyServerUrl').value.trim();
+  const key = document.getElementById('apiKey').value.trim();
+  if (!url || !key) { showToast('Enter URL + API key first', 'var(--amber)'); return; }
+  try {
+    const base = url.startsWith('http') ? url : 'http://' + url;
+    const resp = await fetch(`${base}/emby/System/Info?api_key=${key}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+    const data = await resp.json();
+    showToast(`Connected — Emby ${data.Version} on ${data.OperatingSystem}`, 'var(--green)');
+  } catch (e) { showToast(e.message, 'var(--red)'); }
+}
+
+async function authenticateUser(embyServerUrl, username, password) {
+  const resp = await fetch(`${embyServerUrl}/emby/Users/AuthenticateByName`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Emby-Authorization': 'MediaBrowser Client="EmbyDuplicateFinder", Device="Browser", DeviceId="emby-dup-finder-1", Version="1.0.0"',
+    },
+    body: JSON.stringify({ Username: username, Pw: password }),
+  });
+  if (!resp.ok) throw new Error(`Login failed (${resp.status}): ${await resp.text().catch(() => resp.statusText)}`);
+  const data = await resp.json();
+  const token = data.AccessToken;
+  const userId = data.User?.Id || data.SessionInfo?.UserId || data.UserId;
+  if (!token)  throw new Error('No access token in response');
+  if (!userId) throw new Error('No user ID in response');
+  return { token, userId };
+}
+
+async function findDuplicates(event) {
+  if (event) event.preventDefault();
+  let embyServerUrl = document.getElementById('embyServerUrl').value.trim();
+  const apiKey     = document.getElementById('apiKey').value.trim();
+  const resultsDiv = document.getElementById('results');
+  const prog       = document.getElementById('progress');
+
+  resultsDiv.innerHTML = '';
+  saveCredentials();
+
+  if (!apiKey)        { setError('API Key is required.'); return; }
+  if (!embyServerUrl) { setError('Server URL is required.'); return; }
+  if (!/^https?:\/\//i.test(embyServerUrl)) embyServerUrl = 'http://' + embyServerUrl;
+
+  _embyUrl = embyServerUrl; _apiKey = apiKey;
+
+  const username = document.getElementById('embyUsername').value.trim();
+  const password = document.getElementById('embyPassword').value;
+  if (username) {
+    try {
+      const auth = await authenticateUser(embyServerUrl, username, password);
+      _userToken = auth.token; _userId = auth.userId;
+    } catch (e) { setError(e.message); return; }
+  } else { _userToken = ''; _userId = ''; }
+
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  prog.textContent = '0%';
+
+  try {
+    const libraries = await fetchLibraries(embyServerUrl, apiKey);
+    const movieLibraries = libraries.filter(lib => lib.CollectionType === 'movies');
+    const duplicateResults = [];
+
+    for (let i = 0; i < movieLibraries.length; i++) {
+      const lib = movieLibraries[i];
+      const libId = lib.ItemId || lib.Id;
+      const movies = await fetchMoviesFromLibrary(embyServerUrl, apiKey, libId);
+      prog.textContent = (((i + 1) / movieLibraries.length) * 100 | 0) + '%';
+
+      const tvdbDuplicates   = findTvdbDuplicates(movies);
+      const folderDuplicates = findSameFolderDuplicates(movies);
+      const tvdbCount        = Object.keys(tvdbDuplicates).length;
+      const folderCount      = Object.keys(folderDuplicates).length;
+
+      if (tvdbCount > 0 || folderCount > 0) {
+        duplicateResults.push({ libraryName: lib.Name, tvdbDuplicates, folderDuplicates, tvdbCount, folderCount });
+      }
+    }
+    displayResults(duplicateResults);
+  } catch (error) {
+    setError(error.message, error.stack);
+  } finally {
+    document.getElementById('loading-overlay').classList.add('hidden');
+  }
+}
+
+function setError(msg, stack) {
+  document.getElementById('results').innerHTML = `
+    <div class="library-box" style="border-color:rgba(224,92,46,.3)">
+      <div style="display:flex;align-items:center;gap:10px;color:var(--red);font-weight:700;margin-bottom:6px">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>${msg}
+      </div>
+      ${stack ? `<details style="margin-top:8px"><summary style="font-size:.8rem;color:var(--muted);cursor:pointer">Stack trace</summary><pre style="font-size:.75rem;color:var(--muted);margin-top:8px;overflow:auto">${stack}</pre></details>` : ''}
+    </div>`;
+}
+
+async function fetchLibraries(url, key) {
+  const resp = await fetch(`${url}/emby/Library/VirtualFolders?api_key=${key}`);
+  if (!resp.ok) throw new Error(`Libraries fetch failed (${resp.status}): ${resp.statusText}`);
+  const data = await resp.json();
+  return Array.isArray(data) ? data : [];
+}
+
+async function fetchMoviesFromLibrary(url, key, libraryId) {
+  let all = [], start = 0;
+  while (true) {
+    const resp = await fetch(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Movie&Fields=Path,ProductionYear,ProviderIds,MediaSources&StartIndex=${start}&Limit=100&api_key=${key}`);
+    if (!resp.ok) throw new Error(`Movies fetch failed (${resp.status})`);
+    const data = await resp.json();
+    all = all.concat(data.Items || []);
+    if (!data.TotalRecordCount || (data.Items || []).length < 100) break;
+    start += 100;
+  }
+  return all;
+}
+
+function movieToEntry(movie) {
+  const sourcePaths = (movie.MediaSources || []).map(s => s.Path).filter(Boolean);
+  const path = movie.Path || sourcePaths[0] || '';
+  const parts = path.replace(/\\/g, '/').split('/');
+  const filename = parts.pop() || path;
+  const folder = parts.join('/');
+  return { id: movie.Id, name: movie.Name || 'Unknown', path, folder, filename, year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || '' };
+}
+
+function getFolder(p) {
+  if (!p) return null;
+  const parts = p.replace(/\\/g, '/').split('/');
+  parts.pop();
+  return parts.join('/') || '/';
+}
+
+function getExtension(p) {
+  const m = p && p.match(/\.([a-z0-9]{2,5})$/i);
+  return m ? m[1].toLowerCase() : '';
+}
+
+function findTvdbDuplicates(movies) {
+  const byTvdb = {};
+  movies.forEach(m => {
+    const id = m.ProviderIds?.Tvdb;
+    if (!id) return;
+    if (!byTvdb[id]) byTvdb[id] = [];
+    byTvdb[id].push(movieToEntry(m));
+  });
+  const out = {};
+  for (const [id, items] of Object.entries(byTvdb)) {
+    if (items.length < 2) continue;
+    const folderCounts = {};
+    items.map(i => getFolder(i.path)).forEach(f => { folderCounts[f] = (folderCounts[f] || 0) + 1; });
+    if (Object.values(folderCounts).some(c => c > 1)) out[id] = items;
+  }
+  return out;
+}
+
+function findSameFolderDuplicates(movies) {
+  const byExact = {}, mergedItems = [];
+  movies.forEach(movie => {
+    const sources = movie.MediaSources || [];
+    let paths = sources.map(s => s.Path).filter(p => p && VIDEO_EXTENSIONS.has(getExtension(p)));
+    if (!paths.length && movie.Path && VIDEO_EXTENSIONS.has(getExtension(movie.Path))) paths.push(movie.Path);
+
+    if (paths.length > 1) {
+      mergedItems.push({ label: movie.Name || 'Unknown', files: paths.map(p => ({
+        id: movie.Id, name: movie.Name || 'Unknown', path: p,
+        folder: getFolder(p), filename: p.replace(/\\/g, '/').split('/').pop(),
+        year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || ''
+      }))});
+      return;
+    }
+    if (paths.length === 1) {
+      const p = paths[0], folder = getFolder(p);
+      if (!folder) return;
+      if (!byExact[folder]) byExact[folder] = [];
+      byExact[folder].push({ id: movie.Id, name: movie.Name || 'Unknown', path: p, folder,
+        filename: p.replace(/\\/g, '/').split('/').pop(), year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || '' });
+    }
+  });
+  const out = {};
+  for (const [f, items] of Object.entries(byExact)) { if (items.length > 1) out[f] = items; }
+  mergedItems.forEach(({ label, files }) => { out[`merged:${label}`] = files; });
+  return out;
+}
+
+let _cbCounter = 0;
+
+function makeItemHtml(item) {
+  const cbId = `cb_${++_cbCounter}`;
+  const imdbLink = item.imdb ? `<a href="https://www.imdb.com/title/${item.imdb}" target="_blank">IMDb ↗</a>` : '';
+  return `
+    <li class="file-item" id="li_${cbId}">
+      <input type="checkbox" id="${cbId}" class="delete-cb"
+        data-item-id="${item.id}"
+        data-filename="${item.filename.replace(/"/g, '&quot;')}"
+        data-path="${item.path.replace(/"/g, '&quot;')}">
+      <label for="${cbId}" class="file-info" style="cursor:pointer">
+        <div class="file-folder">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+          </svg>
+          ${item.folder || '—'}
+        </div>
+        <div class="file-name">
+          <span>${item.filename}</span>
+          ${item.year !== 'N/A' ? `<span class="year-badge">${item.year}</span>` : ''}
+          ${imdbLink}
+        </div>
+      </label>
+    </li>`;
+}
+
+function displayResults(results) {
+  const div = document.getElementById('results');
+  div.innerHTML = '';
+  _cbCounter = 0;
+
+  if (!results.length) {
+    div.innerHTML = `
+      <div class="library-box" style="text-align:center;padding:40px">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--green-dim);margin-bottom:14px">
+          <svg width="26" height="26" fill="none" stroke="var(--green)" stroke-width="2.2" viewBox="0 0 24 24">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">All clear!</div>
+        <div style="color:var(--muted);font-size:.88rem">No duplicates found in any library.</div>
+      </div>`;
+    return;
+  }
+
+  results.forEach((result, idx) => {
+    const box = document.createElement('div');
+    box.className = 'library-box';
+    box.style.animationDelay = `${idx * 0.07}s`;
+
+    const canDelete = !!_userToken;
+
+    let tvdbHtml = '';
+    if (result.tvdbCount > 0) {
+      tvdbHtml = `<div class="dup-section-label">Same TVDB ID — ${result.tvdbCount} set${result.tvdbCount !== 1 ? 's' : ''}</div>`;
+      for (const [, items] of Object.entries(result.tvdbDuplicates)) {
+        tvdbHtml += `<details open>
+          <summary>
+            <svg class="chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            <span>${items[0].name} (${items[0].year})</span>
+            <span style="margin-left:auto;font-size:.78rem;color:var(--muted);font-weight:400">${items.length} copies</span>
+          </summary>
+          <ul>${items.map(makeItemHtml).join('')}</ul>
+        </details>`;
+      }
+    }
+
+    let folderHtml = '';
+    if (result.folderCount > 0) {
+      folderHtml = `<div class="dup-section-label">Multiple files in same folder — ${result.folderCount} folder${result.folderCount !== 1 ? 's' : ''}</div>`;
+      for (const [folder, items] of Object.entries(result.folderDuplicates)) {
+        const label = folder.startsWith('merged:')
+          ? `${folder.slice(7)} — merged versions`
+          : (folder.length > 58 ? '…' + folder.slice(-55) : folder);
+        folderHtml += `<details open>
+          <summary>
+            <svg class="chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span>
+            <span style="margin-left:auto;flex-shrink:0;font-size:.78rem;color:var(--muted);font-weight:400">${items.length} files</span>
+          </summary>
+          <ul>${items.map(makeItemHtml).join('')}</ul>
+        </details>`;
+      }
+    }
+
+    const safeResult = JSON.stringify(result).replace(/"/g, '&quot;');
+
+    box.innerHTML = `
+      <div class="lib-header-row">
+        <div class="lib-name-group">
+          <div class="lib-icon-box">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="lib-title">${result.libraryName}</div>
+            <div class="lib-sub">Movie library</div>
+          </div>
+        </div>
+        <div class="pills">
+          ${result.tvdbCount   > 0 ? `<span class="pill pill-amber">${result.tvdbCount} TVDB set${result.tvdbCount   !== 1 ? 's' : ''}</span>` : ''}
+          ${result.folderCount > 0 ? `<span class="pill pill-blue">${result.folderCount} folder${result.folderCount  !== 1 ? 's' : ''}</span>` : ''}
+        </div>
+      </div>
+      ${tvdbHtml}${folderHtml}
+      <div class="action-row">
+        <button class="btn-sm btn-download" onclick='downloadDuplicates(${safeResult})'>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download report
+        </button>
+        ${canDelete ? `
+        <button class="btn-sm btn-delete" onclick="reviewSelected()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+          Delete selected
+        </button>` : ''}
+      </div>
+      ${!canDelete ? `<div class="delete-hint">
+        <svg width="14" height="14" fill="none" stroke="var(--amber)" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Enter username &amp; password above and re-scan to enable deletion.
+      </div>` : ''}`;
+
+    div.appendChild(box);
+  });
+}
+
+function reviewSelected() {
+  const checked = [...document.querySelectorAll('.delete-cb:checked')];
+  if (!checked.length) { showToast('No files selected.', 'var(--amber)'); return; }
+
+  const items = checked.map(cb => ({
+    id: cb.dataset.itemId, filename: cb.dataset.filename,
+    path: cb.dataset.path, liId: cb.closest('li').id,
+  }));
+
+  const listHtml = items.map((item, i) => `
+    <li class="delete-item-row">
+      <div class="delete-item-folder">${getFolder(item.path) || ''}</div>
+      <div class="delete-item-name">${i + 1}. ${item.filename}</div>
+    </li>`).join('');
+
+  const overlay = document.createElement('div');
+  overlay.id = 'delete-modal';
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <div class="modal-title">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Confirm Deletion
+      </div>
+      <p class="modal-body">
+        <strong style="color:var(--text)">${items.length} file${items.length !== 1 ? 's' : ''}</strong> will be permanently deleted from Emby and from disk. This cannot be undone.
+      </p>
+      <ul style="padding:0;margin:0 0 4px">${listHtml}</ul>
+      <div class="modal-actions">
+        <button class="btn-sm btn-cancel" onclick="document.getElementById('delete-modal').remove()">Cancel</button>
+        <button class="btn-sm btn-delete" id="confirm-delete-btn">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          </svg>
+          Delete ${items.length} file${items.length !== 1 ? 's' : ''}
+        </button>
+      </div>
+      <div id="delete-progress"></div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('confirm-delete-btn').addEventListener('click', () => executeDelete(items, overlay));
+}
+
+async function executeDelete(items, overlay) {
+  const btn  = document.getElementById('confirm-delete-btn');
+  const prog = document.getElementById('delete-progress');
+  btn.disabled = true; btn.textContent = 'Deleting…';
+
+  const succeeded = [], failed = [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    prog.innerHTML = `<span style="color:var(--muted)">Deleting ${i + 1} of ${items.length}: <em>${item.filename}</em>…</span>`;
+    try {
+      const endpoints = [
+        () => fetch(`${_embyUrl}/emby/Users/${_userId}/Items/${item.id}?deleteFiles=true`, { method: 'DELETE', headers: { 'X-Emby-Token': _userToken } }),
+        () => fetch(`${_embyUrl}/emby/Items/${item.id}?deleteFiles=true&api_key=${_userToken}`, { method: 'DELETE' }),
+        () => fetch(`${_embyUrl}/emby/Items/${item.id}?deleteFiles=true&api_key=${_apiKey}`,    { method: 'DELETE' }),
+      ];
+      let resp, lastError;
+      for (const call of endpoints) {
+        resp = await call();
+        if (resp.ok || resp.status === 204) break;
+        lastError = `HTTP ${resp.status} — ${await resp.text().catch(() => resp.statusText)}`;
+      }
+      if (!resp.ok && resp.status !== 204) throw new Error(lastError);
+      succeeded.push(item);
+      document.getElementById(item.liId)?.remove();
+    } catch (e) { failed.push({ ...item, error: e.message }); }
+  }
+
+  overlay.remove();
+  if (succeeded.length) await fetch(`${_embyUrl}/emby/Library/Refresh?api_key=${_apiKey}`, { method: 'POST' }).catch(() => {});
+
+  const msgs = [];
+  if (succeeded.length) msgs.push(`${succeeded.length} file${succeeded.length !== 1 ? 's' : ''} deleted`);
+  if (failed.length)    msgs.push(`${failed.length} failed`);
+  showToast(msgs.join(' · '), succeeded.length ? 'var(--green)' : 'var(--red)');
+
+  if (succeeded.length) findDuplicates(null);
+}
+
+function downloadDuplicates(result) {
+  let c = `Emby Duplicates Report — ${result.libraryName}\nGenerated: ${new Date().toISOString()}\n\n`;
+  if (result.tvdbCount > 0) {
+    c += `=== SAME TVDB ID (${result.tvdbCount} sets) ===\n\n`;
+    for (const [id, items] of Object.entries(result.tvdbDuplicates)) {
+      c += `TVDB ${id} — ${items.length} copies:\n`;
+      items.forEach((item, i) => { c += `  ${i+1}. "${item.name}" (${item.year})\n     ${item.path}\n`; });
+      c += '\n';
+    }
+  }
+  if (result.folderCount > 0) {
+    c += `=== MULTIPLE FILES IN SAME FOLDER (${result.folderCount} folders) ===\n\n`;
+    for (const [folder, items] of Object.entries(result.folderDuplicates)) {
+      c += `Folder: ${folder}\n`;
+      items.forEach((item, i) => { c += `  ${i+1}. "${item.name}" (${item.year})\n     ${item.path}\n`; });
+      c += '\n';
+    }
+  }
+  const blob = new Blob([c], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `emby_${result.libraryName.replace(/[^a-zA-Z0-9]/g, '_')}_duplicates_${Date.now()}.txt`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+window.addEventListener('DOMContentLoaded', loadCredentials);
 </script>
 </body>
 </html>
