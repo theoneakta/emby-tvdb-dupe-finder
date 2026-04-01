@@ -1,3 +1,6 @@
+# Docker
+.env
+
 # OS
 .DS_Store
 Thumbs.db
@@ -6,7 +9,3 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
-*.swo
-
-# Docker build artefacts
-.docker/

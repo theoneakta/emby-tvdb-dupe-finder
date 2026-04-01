@@ -3,13 +3,11 @@ FROM nginx:1.27-alpine
 # Remove default nginx site
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Copy our nginx config
+# Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/emby-duplicate-finder.conf
 
-# Copy static app files
-COPY index.html  /usr/share/nginx/html/
-COPY script.js   /usr/share/nginx/html/
-COPY styles.css  /usr/share/nginx/html/
+# Copy app — everything is self-contained in index.html
+COPY index.html /usr/share/nginx/html/
 
 EXPOSE 80
 

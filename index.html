@@ -173,8 +173,10 @@ input[type="text"]:focus, input[type="password"]:focus {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 12px; border-radius: 999px; font-size: .75rem; font-weight: 700; border: 1px solid;
 }
-.pill-amber { background: var(--amber-dim); color: var(--amber); border-color: rgba(245,166,35,.25); }
-.pill-blue  { background: var(--blue-dim);  color: var(--blue);  border-color: rgba(59,142,243,.25); }
+.pill-amber  { background: var(--amber-dim);  color: var(--amber);  border-color: rgba(245,166,35,.25); }
+.pill-green  { background: var(--green-dim); color: var(--green); border-color: rgba(82,181,75,.25); }
+.pill-blue   { background: var(--blue-dim);  color: var(--blue);  border-color: rgba(59,142,243,.25); }
+.pill-red    { background: var(--red-dim);   color: var(--red);   border-color: rgba(224,92,46,.25); }
 
 .dup-section-label {
   display: flex; align-items: center; gap: 8px;
@@ -220,6 +222,7 @@ details ul { padding: 0; margin: 0; }
 .file-name a { font-size: .72rem; font-weight: 500; color: var(--blue); text-decoration: none; padding: 1px 7px; background: var(--blue-dim); border-radius: 5px; }
 .file-name a:hover { text-decoration: underline; }
 .year-badge { background: rgba(255,255,255,.06); color: var(--muted); font-size: .72rem; font-weight: 600; padding: 1px 8px; border-radius: 6px; }
+.emby-tag { background: rgba(59,142,243,.12); color: var(--blue); border: 1px solid rgba(59,142,243,.25); font-size: .68rem; font-weight: 700; padding: 1px 8px; border-radius: 5px; white-space: nowrap; }
 
 .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
 
@@ -232,6 +235,16 @@ details ul { padding: 0; margin: 0; }
 .btn-sm:hover { filter: brightness(1.15); transform: translateY(-1px); }
 .btn-download { background: var(--green-dim); color: var(--green); border-color: rgba(82,181,75,.3); }
 .btn-delete   { background: var(--red-dim);   color: var(--red);   border-color: rgba(224,92,46,.3); }
+
+.arr-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .68rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 999px; border: 1px solid; white-space: nowrap; flex-shrink: 0;
+}
+.arr-managed   { background: rgba(82,181,75,.12);  color: #52b54b; border-color: rgba(82,181,75,.3); }
+.arr-unmanaged { background: rgba(224,92,46,.10);  color: #e05c2e; border-color: rgba(224,92,46,.3); }
+.arr-unknown   { background: rgba(110,138,170,.1); color: #6e8aaa; border-color: rgba(110,138,170,.2); }
+.arr-amber     { background: var(--amber-dim); color: var(--amber); border-color: rgba(245,166,35,.3); }
 
 .delete-hint {
   font-size: .78rem; color: var(--muted); background: rgba(255,255,255,.03);
@@ -293,6 +306,55 @@ details ul { padding: 0; margin: 0; }
   z-index: 3000; opacity: 0; pointer-events: none; transition: opacity .3s; white-space: nowrap;
 }
 #toast.show { opacity: 1; }
+
+/* ── TABS ────────────────────────────────────── */
+.tab-bar {
+  width: 100%; max-width: 860px;
+  display: flex; gap: 4px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 6px 6px 0; margin-bottom: -1px; position: relative; z-index: 1;
+}
+.tab-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 18px; border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 600;
+  cursor: pointer; border: none; background: transparent; color: var(--muted);
+  transition: background .15s, color .15s;
+}
+.tab-btn:hover { background: rgba(255,255,255,.04); color: var(--text); }
+.tab-btn.active { background: var(--surface); color: var(--text); border-bottom: 2px solid var(--green); }
+.tab-btn svg { flex-shrink: 0; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── ACTIVITY LOG ───────────────────────────── */
+.log-panel {
+  width: 100%; max-width: 860px; margin-top: 18px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.log-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px; cursor: pointer; user-select: none;
+  font-size: .82rem; font-weight: 700; color: var(--muted);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.log-header:hover { background: rgba(255,255,255,.03); }
+.log-body {
+  max-height: 260px; overflow-y: auto;
+  font-family: 'Space Mono', monospace; font-size: .72rem;
+  padding: 0 14px 10px; display: none;
+}
+.log-body.open { display: block; }
+.log-entry { padding: 3px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+.log-entry.ok   { color: var(--green); }
+.log-entry.err  { color: var(--red); }
+.log-entry.info { color: var(--blue); }
+.log-clear { font-size: .7rem; padding: 3px 10px; border-radius: 5px;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border2);
+  color: var(--muted); cursor: pointer; }
+.log-clear:hover { color: var(--text); }
 
 /* ── FOOTER ──────────────────────────────────── */
 footer { margin-top: 52px; font-size: .76rem; color: #2d4560; text-align: center; }
@@ -403,12 +465,68 @@ footer a:hover { color: var(--green); }
 
   <div class="divider"></div>
 
+  <div class="section-label" style="margin-bottom:12px">Radarr / Sonarr <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#3a506a">— optional, marks which files are managed</span></div>
+  <div class="grid-2">
+    <div class="field">
+      <div class="field-label">Radarr URL</div>
+      <div class="input-wrap">
+        <span class="ico">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+          </svg>
+        </span>
+        <input type="text" id="radarrUrl" placeholder="http://192.168.1.10:7878">
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">Radarr API Key</div>
+      <div class="input-wrap">
+        <span class="ico">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="8" cy="15" r="4"/><path d="M12 15h8M16 13v4"/>
+          </svg>
+        </span>
+        <input type="password" id="radarrApiKey" placeholder="Radarr API key">
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">Sonarr URL</div>
+      <div class="input-wrap">
+        <span class="ico">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3l-4 4-4-4"/>
+          </svg>
+        </span>
+        <input type="text" id="sonarrUrl" placeholder="http://192.168.1.10:8989">
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">Sonarr API Key</div>
+      <div class="input-wrap">
+        <span class="ico">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="8" cy="15" r="4"/><path d="M12 15h8M16 13v4"/>
+          </svg>
+        </span>
+        <input type="password" id="sonarrApiKey" placeholder="Sonarr API key">
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
   <div class="btn-row">
-    <button class="btn btn-green" onclick="findDuplicates(event)">
+    <button class="btn btn-green" onclick="scanMovies(event)">
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
       </svg>
-      Scan for Duplicates
+      Scan Movies
+    </button>
+    <button class="btn btn-green" style="background:linear-gradient(135deg,#3b8ef3,#2563b0);box-shadow:0 4px 20px rgba(59,142,243,.3)" onclick="scanTV(event)">
+      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3l-4 4-4-4"/>
+      </svg>
+      Scan TV Shows
     </button>
     <button class="btn btn-ghost" onclick="testConnection(event)">
       <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -419,7 +537,43 @@ footer a:hover { color: var(--green); }
   </div>
 </div>
 
-<div id="results"></div>
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-movies" onclick="switchTab('movies')">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+    </svg>
+    Movies
+  </button>
+  <button class="tab-btn" id="tab-tv" onclick="switchTab('tv')">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3l-4 4-4-4"/>
+    </svg>
+    TV Shows
+  </button>
+</div>
+
+<div class="tab-panel active" id="panel-movies">
+  <div id="results-movies"></div>
+</div>
+<div class="tab-panel" id="panel-tv">
+  <div id="results-tv"></div>
+</div>
+
+<div class="log-panel" id="log-panel">
+  <div class="log-header" onclick="toggleLog()">
+    <span>
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:6px;vertical-align:middle">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+      </svg>
+      Activity Log
+    </span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="log-clear" onclick="event.stopPropagation();clearLog()">Clear</button>
+      <span id="log-chevron" style="transition:transform .2s">▼</span>
+    </div>
+  </div>
+  <div class="log-body" id="log-body"></div>
+</div>
 
 <footer>
   Open source · <a href="https://github.com/imahmud1/emby-dupe-finder" target="_blank">GitHub</a> · MIT License
@@ -437,6 +591,16 @@ footer a:hover { color: var(--green); }
 const VIDEO_EXTENSIONS = new Set(['mkv','mp4','avi','m4v','mov','wmv','ts','m2ts','mpg','mpeg','flv','webm','iso','rmvb']);
 
 let _embyUrl = '', _apiKey = '', _userToken = '', _userId = '';
+let _radarrMap = null;  // Map of tmdbId → normalized file path for movies Radarr has on disk
+let _sonarrIds = null;          // Set of TVDB ID strings managed by Sonarr series
+let _sonarrEpisodeFiles = null; // Map of filename→data for episode files Sonarr manages
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
 
 function showToast(msg, color) {
   const t = document.getElementById('toast');
@@ -449,10 +613,14 @@ function showToast(msg, color) {
 function saveCredentials() {
   if (!document.getElementById('rememberMe').checked) { localStorage.removeItem('emby_creds'); return; }
   localStorage.setItem('emby_creds', JSON.stringify({
-    serverUrl: document.getElementById('embyServerUrl').value.trim(),
-    apiKey:    document.getElementById('apiKey').value.trim(),
-    username:  document.getElementById('embyUsername').value.trim(),
-    password:  document.getElementById('embyPassword').value,
+    serverUrl:    document.getElementById('embyServerUrl').value.trim(),
+    apiKey:       document.getElementById('apiKey').value.trim(),
+    username:     document.getElementById('embyUsername').value.trim(),
+    password:     document.getElementById('embyPassword').value,
+    radarrUrl:    document.getElementById('radarrUrl').value.trim(),
+    radarrApiKey: document.getElementById('radarrApiKey').value.trim(),
+    sonarrUrl:    document.getElementById('sonarrUrl').value.trim(),
+    sonarrApiKey: document.getElementById('sonarrApiKey').value.trim(),
   }));
 }
 
@@ -461,26 +629,139 @@ function loadCredentials() {
     const saved = localStorage.getItem('emby_creds');
     if (!saved) return;
     const c = JSON.parse(saved);
-    if (c.serverUrl) document.getElementById('embyServerUrl').value = c.serverUrl;
-    if (c.apiKey)    document.getElementById('apiKey').value         = c.apiKey;
-    if (c.username)  document.getElementById('embyUsername').value   = c.username;
-    if (c.password)  document.getElementById('embyPassword').value   = c.password;
+    if (c.serverUrl)    document.getElementById('embyServerUrl').value = c.serverUrl;
+    if (c.apiKey)       document.getElementById('apiKey').value         = c.apiKey;
+    if (c.username)     document.getElementById('embyUsername').value   = c.username;
+    if (c.password)     document.getElementById('embyPassword').value   = c.password;
+    if (c.radarrUrl)    document.getElementById('radarrUrl').value       = c.radarrUrl;
+    if (c.radarrApiKey) document.getElementById('radarrApiKey').value    = c.radarrApiKey;
+    if (c.sonarrUrl)    document.getElementById('sonarrUrl').value       = c.sonarrUrl;
+    if (c.sonarrApiKey) document.getElementById('sonarrApiKey').value    = c.sonarrApiKey;
     document.getElementById('rememberMe').checked = true;
   } catch (_) {}
 }
 
 async function testConnection(event) {
   if (event) event.preventDefault();
-  const url = document.getElementById('embyServerUrl').value.trim();
-  const key = document.getElementById('apiKey').value.trim();
-  if (!url || !key) { showToast('Enter URL + API key first', 'var(--amber)'); return; }
+
+  const embyUrl    = document.getElementById('embyServerUrl').value.trim();
+  const embyKey    = document.getElementById('apiKey').value.trim();
+  const radarrUrl  = document.getElementById('radarrUrl').value.trim();
+  const radarrKey  = document.getElementById('radarrApiKey').value.trim();
+  const sonarrUrl  = document.getElementById('sonarrUrl').value.trim();
+  const sonarrKey  = document.getElementById('sonarrApiKey').value.trim();
+
+  if (!embyUrl || !embyKey) { showToast('Enter Emby URL + API key first', 'var(--amber)'); return; }
+
+  // Show a results modal
+  const existing = document.getElementById('conn-test-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'conn-test-modal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-box" style="max-width:480px">
+      <div class="modal-title" style="color:var(--text)">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/>
+        </svg>
+        Connection Test
+      </div>
+      <div id="conn-test-rows" style="display:flex;flex-direction:column;gap:10px;margin:16px 0 20px"></div>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn-sm btn-cancel" onclick="document.getElementById('conn-test-modal').remove()">Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const rows = document.getElementById('conn-test-rows');
+
+  function addRow(name, state, detail) {
+    const color   = state === 'ok' ? 'var(--green)' : state === 'skip' ? 'var(--muted)' : 'var(--red)';
+    const icon    = state === 'ok'
+      ? '<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
+      : state === 'skip'
+      ? '<circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>'
+      : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+    const row = document.createElement('div');
+    row.style.cssText = `display:flex;align-items:flex-start;gap:12px;padding:12px 14px;
+      background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius-xs)`;
+    row.innerHTML = `
+      <svg width="18" height="18" fill="none" stroke="${color}" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px">${icon}</svg>
+      <div>
+        <div style="font-weight:700;font-size:.88rem">${name}</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:3px">${detail}</div>
+      </div>`;
+    rows.appendChild(row);
+    return row;
+  }
+
+  function pendingRow(name, url) {
+    const row = document.createElement('div');
+    row.style.cssText = `display:flex;align-items:center;gap:12px;padding:12px 14px;
+      background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius-xs)`;
+    row.innerHTML = `
+      <div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--green);animation:spin .75s linear infinite;flex-shrink:0"></div>
+      <div style="font-weight:700;font-size:.88rem;color:var(--muted)">Testing ${name}…</div>`;
+    rows.appendChild(row);
+    return row;
+  }
+
+  // ── Emby ──
+  let embyRow = pendingRow('Emby', embyUrl);
   try {
-    const base = url.startsWith('http') ? url : 'http://' + url;
-    const resp = await fetch(`${base}/emby/System/Info?api_key=${key}`);
+    const base = embyUrl.startsWith('http') ? embyUrl : 'http://' + embyUrl;
+    const resp = await fetch(`${base}/emby/System/Info?api_key=${embyKey}`);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
     const data = await resp.json();
-    showToast(`Connected — Emby ${data.Version} on ${data.OperatingSystem}`, 'var(--green)');
-  } catch (e) { showToast(e.message, 'var(--red)'); }
+    embyRow.replaceWith(addRow('Emby', 'ok',
+      `v${data.Version} · ${data.OperatingSystem} · ${data.ServerName || 'Emby Server'}`));
+  } catch(e) {
+    embyRow.replaceWith(addRow('Emby', 'error', e.message));
+  }
+
+  // ── Radarr ──
+  if (radarrUrl && radarrKey) {
+    let radarrRow = pendingRow('Radarr', radarrUrl);
+    try {
+      const base = radarrUrl.replace(/\/+$/, '');
+      const resp = await fetch(`${base}/api/v3/system/status?apikey=${radarrKey}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+      const data = await resp.json();
+      // Also get movie count (hasFile only)
+      const movResp = await fetch(`${base}/api/v3/movie?apikey=${radarrKey}`);
+      const movies  = movResp.ok ? await movResp.json() : [];
+      const total   = movies.length;
+      const hasFile = movies.filter(m => m.hasFile && m.movieFile?.path).length;
+      radarrRow.replaceWith(addRow('Radarr', 'ok',
+        `v${data.version} · ${hasFile} movies with files / ${total} monitored`));
+    } catch(e) {
+      radarrRow.replaceWith(addRow('Radarr', 'error', e.message));
+    }
+  } else {
+    addRow('Radarr', 'skip', 'Not configured — fill in URL + API key to enable');
+  }
+
+  // ── Sonarr ──
+  if (sonarrUrl && sonarrKey) {
+    let sonarrRow = pendingRow('Sonarr', sonarrUrl);
+    try {
+      const base = sonarrUrl.replace(/\/+$/, '');
+      const resp = await fetch(`${base}/api/v3/system/status?apikey=${sonarrKey}`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+      const data = await resp.json();
+      const serResp = await fetch(`${base}/api/v3/series?apikey=${sonarrKey}`);
+      const series  = serResp.ok ? await serResp.json() : [];
+      sonarrRow.replaceWith(addRow('Sonarr', 'ok',
+        `v${data.version} · ${series.length} series monitored`));
+    } catch(e) {
+      sonarrRow.replaceWith(addRow('Sonarr', 'error', e.message));
+    }
+  } else {
+    addRow('Sonarr', 'skip', 'Not configured — fill in URL + API key to enable');
+  }
 }
 
 async function authenticateUser(embyServerUrl, username, password) {
@@ -501,20 +782,107 @@ async function authenticateUser(embyServerUrl, username, password) {
   return { token, userId };
 }
 
-async function findDuplicates(event) {
-  if (event) event.preventDefault();
+// ── Radarr / Sonarr ───────────────────────────────────────────────────────────
+
+async function fetchRadarrMap(baseUrl, apiKey) {
+  // GET /api/v3/movie — build a Map of tmdbId → exact file path for movies Radarr has on disk
+  // Movies that are monitored but not downloaded (hasFile:false) are excluded entirely
+  const url = baseUrl.replace(/\/+$/, '');
+  const resp = await fetch(`${url}/api/v3/movie?apikey=${apiKey}`);
+  if (!resp.ok) throw new Error(`Radarr: HTTP ${resp.status}`);
+  const movies = await resp.json();
+  const map = new Map();
+  movies.forEach(m => {
+    if (m.tmdbId && m.hasFile && m.movieFile?.path) {
+      map.set(String(m.tmdbId), m.movieFile.path.replace(/\\/g, '/').toLowerCase());
+    }
+  });
+  return map;
+}
+
+async function fetchSonarrData(baseUrl, apiKey) {
+  // Returns { seriesIds: Set<tvdbId>, episodeFiles: Map<filename_lower, {seriesTitle, season, episode}> }
+  const url = baseUrl.replace(/\/+$/, '');
+
+  // Fetch all series (for movie-style badge on series level)
+  const seriesResp = await fetch(`${url}/api/v3/series?apikey=${apiKey}`);
+  if (!seriesResp.ok) throw new Error(`Sonarr: HTTP ${seriesResp.status}`);
+  const seriesData = await seriesResp.json();
+  const seriesIds = new Set();
+  seriesData.forEach(s => { if (s.tvdbId) seriesIds.add(String(s.tvdbId)); });
+
+  // Fetch all episode files (for episode-level matching)
+  const efResp = await fetch(`${url}/api/v3/episodefile?apikey=${apiKey}`);
+  const episodeFiles = new Map();
+  if (efResp.ok) {
+    const files = await efResp.json();
+    files.forEach(f => {
+      if (f.path) {
+        const filename = f.path.replace(/\\/g, '/').split('/').pop().toLowerCase();
+        episodeFiles.set(filename, {
+          seriesId: f.seriesId,
+          seasonNumber: f.seasonNumber,
+          path: f.path,
+        });
+      }
+    });
+  }
+  return { seriesIds, episodeFiles };
+}
+
+// Sonarr series-level: returns 'managed' | 'unmanaged' | 'unknown'
+function sonarrStatus(tvdbId) {
+  if (!_sonarrIds) return 'unknown';
+  if (!tvdbId)     return 'unknown';
+  return _sonarrIds.has(String(tvdbId)) ? 'managed' : 'unmanaged';
+}
+
+// Sonarr episode-level: returns 'managed' | 'unmanaged' | 'unknown'
+function sonarrEpisodeStatus(filePath) {
+  if (!_sonarrEpisodeFiles) return 'unknown';
+  if (!filePath) return 'unknown';
+  const filename = filePath.replace(/\\/g, '/').split('/').pop().toLowerCase();
+  return _sonarrEpisodeFiles.has(filename) ? 'managed' : 'unmanaged';
+}
+
+// Radarr: returns 'exact'  — this file is Radarr's copy
+//                'duplicate' — Radarr has this movie but a DIFFERENT file (this one is the extra)
+//                'unmanaged' — Radarr doesn't have this movie at all
+//                'unknown'   — Radarr not configured
+function normPath(p) {
+  return (p || '').replace(/\\/g, '/').toLowerCase();
+}
+
+function radarrStatus(tmdbId, filePath) {
+  if (!_radarrMap) return 'unknown';
+  if (!tmdbId)     return 'unknown';
+  const radarrPath = _radarrMap.get(String(tmdbId));
+  if (!radarrPath) return 'unmanaged';
+
+  const rParts = radarrPath.split('/');
+  const rFile  = rParts.pop();            // filename
+  const rDir   = rParts.pop() || '';      // immediate parent folder
+
+  const iParts = normPath(filePath).split('/');
+  const iFile  = iParts.pop();
+  const iDir   = iParts.pop() || '';
+
+  // Both filename AND parent folder must match.
+  // This handles the case where two copies have the same filename but sit in
+  // folders with slightly different names (e.g. "Monte Cristo" vs "Monte-Cristo").
+  if (iFile === rFile && iDir === rDir) return 'exact';
+  // Same movie in Radarr but this is a different file → duplicate to delete
+  return 'duplicate';
+}
+
+// ── Shared scan setup ────────────────────────────────────────────────────────
+async function scanSetup() {
   let embyServerUrl = document.getElementById('embyServerUrl').value.trim();
-  const apiKey     = document.getElementById('apiKey').value.trim();
-  const resultsDiv = document.getElementById('results');
-  const prog       = document.getElementById('progress');
-
-  resultsDiv.innerHTML = '';
+  const apiKey = document.getElementById('apiKey').value.trim();
   saveCredentials();
-
-  if (!apiKey)        { setError('API Key is required.'); return; }
-  if (!embyServerUrl) { setError('Server URL is required.'); return; }
+  if (!apiKey)        { setError('API Key is required.'); return null; }
+  if (!embyServerUrl) { setError('Server URL is required.'); return null; }
   if (!/^https?:\/\//i.test(embyServerUrl)) embyServerUrl = 'http://' + embyServerUrl;
-
   _embyUrl = embyServerUrl; _apiKey = apiKey;
 
   const username = document.getElementById('embyUsername').value.trim();
@@ -523,33 +891,61 @@ async function findDuplicates(event) {
     try {
       const auth = await authenticateUser(embyServerUrl, username, password);
       _userToken = auth.token; _userId = auth.userId;
-    } catch (e) { setError(e.message); return; }
+    } catch (e) { setError(e.message); return null; }
   } else { _userToken = ''; _userId = ''; }
 
+  return embyServerUrl;
+}
+
+// ── Scan Movies (Radarr-aware) ────────────────────────────────────────────────
+async function scanMovies(event) {
+  if (event) event.preventDefault();
+  const embyServerUrl = await scanSetup();
+  if (!embyServerUrl) return;
+
+  switchTab('movies');
+
+  const radarrUrl    = document.getElementById('radarrUrl').value.trim();
+  const radarrApiKey = document.getElementById('radarrApiKey').value.trim();
+  _radarrMap = null;
+  _sonarrIds = null; // not used in movies tab
+  if (radarrUrl && radarrApiKey) {
+    try {
+      _radarrMap = await fetchRadarrMap(radarrUrl, radarrApiKey);
+      log('Radarr: ' + _radarrMap.size + ' movies with files loaded', 'ok');
+    } catch(e) { showToast('Radarr: ' + e.message, 'var(--amber)'); log('Radarr error: ' + e.message, 'err'); }
+  }
+
+  const prog = document.getElementById('progress');
   document.getElementById('loading-overlay').classList.remove('hidden');
   prog.textContent = '0%';
 
   try {
-    const libraries = await fetchLibraries(embyServerUrl, apiKey);
+    const libraries = await fetchLibraries(embyServerUrl, _apiKey);
     const movieLibraries = libraries.filter(lib => lib.CollectionType === 'movies');
     const duplicateResults = [];
 
     for (let i = 0; i < movieLibraries.length; i++) {
       const lib = movieLibraries[i];
       const libId = lib.ItemId || lib.Id;
-      const movies = await fetchMoviesFromLibrary(embyServerUrl, apiKey, libId);
+      const movies = await fetchMoviesFromLibrary(embyServerUrl, _apiKey, libId);
+      log('Scanned library "' + lib.Name + '": ' + movies.length + ' movies', 'info');
       prog.textContent = (((i + 1) / movieLibraries.length) * 100 | 0) + '%';
 
-      const tvdbDuplicates   = findTvdbDuplicates(movies);
-      const folderDuplicates = findSameFolderDuplicates(movies);
-      const tvdbCount        = Object.keys(tvdbDuplicates).length;
-      const folderCount      = Object.keys(folderDuplicates).length;
+      const tvdbDuplicates     = findTvdbDuplicates(movies);
+      const folderDuplicates   = findSameFolderDuplicates(movies);
+      const nameYearDuplicates = findNameYearDuplicates(movies);
+      const mixedFolders       = findMixedFolderDuplicates(movies, folderDuplicates);
+      const tvdbCount          = Object.keys(tvdbDuplicates).length;
+      const folderCount        = Object.keys(folderDuplicates).length;
+      const nameYearCount      = Object.keys(nameYearDuplicates).length;
+      const mixedCount         = Object.keys(mixedFolders).length;
 
-      if (tvdbCount > 0 || folderCount > 0) {
-        duplicateResults.push({ libraryName: lib.Name, tvdbDuplicates, folderDuplicates, tvdbCount, folderCount });
+      if (tvdbCount > 0 || folderCount > 0 || nameYearCount > 0 || mixedCount > 0) {
+        duplicateResults.push({ libraryName: lib.Name, tvdbDuplicates, folderDuplicates, nameYearDuplicates, mixedFolders, tvdbCount, folderCount, nameYearCount, mixedCount });
       }
     }
-    displayResults(duplicateResults);
+    displayResults(duplicateResults, 'results-movies');
   } catch (error) {
     setError(error.message, error.stack);
   } finally {
@@ -557,8 +953,68 @@ async function findDuplicates(event) {
   }
 }
 
+// ── Scan TV Shows (Sonarr-aware) ──────────────────────────────────────────────
+async function scanTV(event) {
+  if (event) event.preventDefault();
+  const embyServerUrl = await scanSetup();
+  if (!embyServerUrl) return;
+
+  switchTab('tv');
+
+  const sonarrUrl    = document.getElementById('sonarrUrl').value.trim();
+  const sonarrApiKey = document.getElementById('sonarrApiKey').value.trim();
+  _sonarrIds = null;
+  _sonarrEpisodeFiles = null;
+  _radarrMap = null;
+
+  if (sonarrUrl && sonarrApiKey) {
+    try {
+      const sonarrData = await fetchSonarrData(sonarrUrl, sonarrApiKey);
+      _sonarrIds = sonarrData.seriesIds;
+      _sonarrEpisodeFiles = sonarrData.episodeFiles;
+      log('Sonarr: ' + _sonarrIds.size + ' series, ' + _sonarrEpisodeFiles.size + ' episode files loaded', 'ok');
+    } catch(e) { showToast('Sonarr: ' + e.message, 'var(--amber)'); log('Sonarr error: ' + e.message, 'err'); }
+  }
+
+  const prog = document.getElementById('progress');
+  document.getElementById('loading-overlay').classList.remove('hidden');
+  prog.textContent = '0%';
+
+  try {
+    const libraries = await fetchLibraries(embyServerUrl, _apiKey);
+    const tvLibraries = libraries.filter(lib => lib.CollectionType === 'tvshows');
+    const allResults = [];
+
+    for (let i = 0; i < tvLibraries.length; i++) {
+      const lib = tvLibraries[i];
+      const libId = lib.ItemId || lib.Id;
+      prog.textContent = (((i + 1) / tvLibraries.length) * 100 | 0) + '%';
+
+      // Fetch all episodes (not series) — each episode is one file
+      const episodes = await fetchEpisodesFromLibrary(embyServerUrl, _apiKey, libId);
+      const dupEpisodes = findDuplicateEpisodes(episodes);
+      const dupCount = Object.keys(dupEpisodes).length;
+
+      if (dupCount > 0) {
+        allResults.push({ libraryName: lib.Name, dupEpisodes, dupCount });
+      }
+    }
+    displayTVResults(allResults);
+  } catch (error) {
+    setError(error.message, error.stack);
+    log('Scan error: ' + error.message, 'err');
+  } finally {
+    document.getElementById('loading-overlay').classList.add('hidden');
+  }
+}
+
+// Keep old name working (called after delete)
+function findDuplicates(event) { return scanMovies(event); }
+
 function setError(msg, stack) {
-  document.getElementById('results').innerHTML = `
+  const activePanel = document.querySelector('.tab-panel.active');
+  const resultsDiv  = activePanel ? activePanel.querySelector('[id^="results-"]') : document.getElementById('results-movies');
+  resultsDiv.innerHTML = `
     <div class="library-box" style="border-color:rgba(224,92,46,.3)">
       <div style="display:flex;align-items:center;gap:10px;color:var(--red);font-weight:700;margin-bottom:6px">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -579,7 +1035,7 @@ async function fetchLibraries(url, key) {
 async function fetchMoviesFromLibrary(url, key, libraryId) {
   let all = [], start = 0;
   while (true) {
-    const resp = await fetch(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Movie&Fields=Path,ProductionYear,ProviderIds,MediaSources&StartIndex=${start}&Limit=100&api_key=${key}`);
+    const resp = await fetch(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Movie&Fields=Path,ProductionYear,ProviderIds,MediaSources,Tags&StartIndex=${start}&Limit=100&api_key=${key}`);
     if (!resp.ok) throw new Error(`Movies fetch failed (${resp.status})`);
     const data = await resp.json();
     all = all.concat(data.Items || []);
@@ -589,13 +1045,61 @@ async function fetchMoviesFromLibrary(url, key, libraryId) {
   return all;
 }
 
+async function fetchEpisodesFromLibrary(url, key, libraryId) {
+  // Fetch Episode items — each episode has SeriesName, ParentIndexNumber (season), IndexNumber (episode)
+  let all = [], start = 0;
+  while (true) {
+    const resp = await fetch(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Episode&Fields=Path,ProviderIds,MediaSources,SeriesName,ParentIndexNumber,IndexNumber,Tags&StartIndex=${start}&Limit=100&api_key=${key}`);
+    if (!resp.ok) throw new Error(`TV fetch failed (${resp.status})`);
+    const data = await resp.json();
+    all = all.concat(data.Items || []);
+    if (!data.TotalRecordCount || (data.Items || []).length < 100) break;
+    start += 100;
+  }
+  return all;
+}
+
+// Group episodes by Series > Season > Episode number, flag any group with 2+ files
+function findDuplicateEpisodes(episodes) {
+  const byKey = {};
+  episodes.forEach(ep => {
+    const series  = ep.SeriesName || 'Unknown';
+    const season  = ep.ParentIndexNumber != null ? ep.ParentIndexNumber : '?';
+    const epNum   = ep.IndexNumber != null ? ep.IndexNumber : '?';
+    const key     = series + '|||S' + String(season).padStart(2,'0') + 'E' + String(epNum).padStart(2,'0');
+
+    const sources = (ep.MediaSources || []).map(s => s.Path).filter(Boolean);
+    const path    = ep.Path || sources[0] || '';
+    if (!path) return;
+
+    if (!byKey[key]) byKey[key] = { series, season, epNum, items: [] };
+    byKey[key].items.push({
+      id:       ep.Id,
+      name:     ep.Name || ('Episode ' + epNum),
+      series,
+      season,
+      epNum,
+      path,
+      folder:   getFolder(path),
+      filename: path.replace(/\\/g, '/').split('/').pop(),
+      tvdb:     ep.ProviderIds?.Tvdb || ep.SeriesProviderIds?.Tvdb || '',
+      tags:     (ep.TagItems || []).map(t => t.Name),
+    });
+  });
+
+  const out = {};
+  for (const [key, val] of Object.entries(byKey)) {
+    if (val.items.length > 1) out[key] = val;
+  }
+  return out;
+}
 function movieToEntry(movie) {
   const sourcePaths = (movie.MediaSources || []).map(s => s.Path).filter(Boolean);
   const path = movie.Path || sourcePaths[0] || '';
   const parts = path.replace(/\\/g, '/').split('/');
   const filename = parts.pop() || path;
   const folder = parts.join('/');
-  return { id: movie.Id, name: movie.Name || 'Unknown', path, folder, filename, year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || '' };
+  return { id: movie.Id, name: movie.Name || 'Unknown', path, folder, filename, year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || '', tmdb: movie.ProviderIds?.Tmdb || '', tvdb: movie.ProviderIds?.Tvdb || '', tags: (movie.TagItems || []).map(t => t.Name) };
 }
 
 function getFolder(p) {
@@ -639,7 +1143,7 @@ function findSameFolderDuplicates(movies) {
       mergedItems.push({ label: movie.Name || 'Unknown', files: paths.map(p => ({
         id: movie.Id, name: movie.Name || 'Unknown', path: p,
         folder: getFolder(p), filename: p.replace(/\\/g, '/').split('/').pop(),
-        year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || ''
+        year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || '', tmdb: movie.ProviderIds?.Tmdb || '', tvdb: movie.ProviderIds?.Tvdb || '', tags: (movie.TagItems || []).map(t => t.Name)
       }))});
       return;
     }
@@ -648,7 +1152,7 @@ function findSameFolderDuplicates(movies) {
       if (!folder) return;
       if (!byExact[folder]) byExact[folder] = [];
       byExact[folder].push({ id: movie.Id, name: movie.Name || 'Unknown', path: p, folder,
-        filename: p.replace(/\\/g, '/').split('/').pop(), year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || '' });
+        filename: p.replace(/\\/g, '/').split('/').pop(), year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || '', tmdb: movie.ProviderIds?.Tmdb || '', tvdb: movie.ProviderIds?.Tvdb || '', tags: (movie.TagItems || []).map(t => t.Name) });
     }
   });
   const out = {};
@@ -657,11 +1161,104 @@ function findSameFolderDuplicates(movies) {
   return out;
 }
 
+// ── Mixed-folder detection ────────────────────────────────────────────────────
+// Finds folders that contain at least one Radarr-managed movie AND at least one
+// unmanaged movie — the classic "manually dumped next to a proper download" case.
+// Only runs when Radarr is configured.
+function findMixedFolderDuplicates(movies, alreadyShownFolders) {
+  if (!_radarrMap) return {};
+
+  // Folders already shown in "same folder" section — skip them to avoid duplicates
+  const excluded = new Set(Object.keys(alreadyShownFolders || {}));
+
+  // Group all movies by their parent folder
+  const byFolder = {};
+  movies.forEach(movie => {
+    const sources = movie.MediaSources || [];
+    let paths = sources.map(s => s.Path).filter(p => p && VIDEO_EXTENSIONS.has(getExtension(p)));
+    if (!paths.length && movie.Path && VIDEO_EXTENSIONS.has(getExtension(movie.Path))) paths.push(movie.Path);
+    paths.forEach(p => {
+      const folder = getFolder(p);
+      if (!folder || excluded.has(folder)) return;
+      if (!byFolder[folder]) byFolder[folder] = [];
+      byFolder[folder].push({
+        id: movie.Id, name: movie.Name || 'Unknown', path: p, folder,
+        filename: p.replace(/\\/g, '/').split('/').pop(),
+        year: movie.ProductionYear || 'N/A',
+        imdb: movie.ProviderIds?.Imdb || '',
+        tmdb: movie.ProviderIds?.Tmdb || '',
+        tvdb: movie.ProviderIds?.Tvdb || '',
+        tags: (movie.TagItems || []).map(t => t.Name),
+      });
+    });
+  });
+
+  const out = {};
+  for (const [folder, items] of Object.entries(byFolder)) {
+    if (items.length < 2) continue;
+    const statuses = items.map(item => radarrStatus(item.tmdb, item.path));
+    const hasManaged   = statuses.some(s => s === 'exact');
+    const hasUnmanaged = statuses.some(s => s === 'unmanaged' || s === 'duplicate');
+    // Only flag if there's a genuine mix — purely managed or purely unmanaged folders are not flagged
+    if (hasManaged && hasUnmanaged) out[folder] = items;
+  }
+  return out;
+}
+
+function normaliseName(name) {
+    return (name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9 ]/g, ' ')
+        .replace(/\b(the|a|an)\b/g, '')
+        .replace(/\b(extended|unrated|theatrical|directors? cut|remastered|repack)\b/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+}
+
+function findNameYearDuplicates(movies) {
+    const byKey = {};
+    movies.forEach(movie => {
+        const name = normaliseName(movie.Name);
+        const year = movie.ProductionYear || 'unknown';
+        if (!name) return;
+        const key = `${name}|||${year}`;
+        if (!byKey[key]) byKey[key] = [];
+        byKey[key].push(movieToEntry(movie));
+    });
+    const out = {};
+    for (const [key, items] of Object.entries(byKey)) {
+        if (items.length < 2) continue;
+        const folders = new Set(items.map(i => i.folder));
+        if (folders.size < 2) continue;
+        out[key] = items;
+    }
+    return out;
+}
+
 let _cbCounter = 0;
+
+function arrBadge(item) {
+  const parts = [];
+  // Movies tab: show Radarr only
+  if (_radarrMap !== null) {
+    const rs = radarrStatus(item.tmdb, item.path);
+    if      (rs === 'exact')     parts.push(`<span class="arr-badge arr-managed" title="This is the file Radarr manages">✓ Radarr</span>`);
+    else if (rs === 'duplicate') parts.push(`<span class="arr-badge arr-amber"   title="Radarr has a different copy — this is the duplicate">⚠ Radarr duplicate</span>`);
+    else if (rs === 'unmanaged') parts.push(`<span class="arr-badge arr-unmanaged" title="Not in Radarr at all">✗ Not in Radarr</span>`);
+  }
+  // TV tab: show Sonarr only
+  if (_sonarrIds !== null) {
+    const ss = sonarrStatus(item.tvdb);
+    if      (ss === 'managed')   parts.push(`<span class="arr-badge arr-managed">✓ Sonarr</span>`);
+    else if (ss === 'unmanaged') parts.push(`<span class="arr-badge arr-unmanaged">✗ Not in Sonarr</span>`);
+  }
+  return parts.join('');
+}
 
 function makeItemHtml(item) {
   const cbId = `cb_${++_cbCounter}`;
   const imdbLink = item.imdb ? `<a href="https://www.imdb.com/title/${item.imdb}" target="_blank">IMDb ↗</a>` : '';
+  const tagsHtml = (item.tags || []).map(t => `<span class="emby-tag">${t}</span>`).join('');
   return `
     <li class="file-item" id="li_${cbId}">
       <input type="checkbox" id="${cbId}" class="delete-cb"
@@ -678,14 +1275,127 @@ function makeItemHtml(item) {
         <div class="file-name">
           <span>${item.filename}</span>
           ${item.year !== 'N/A' ? `<span class="year-badge">${item.year}</span>` : ''}
+          ${tagsHtml}
+          ${arrBadge(item)}
           ${imdbLink}
         </div>
       </label>
     </li>`;
 }
 
-function displayResults(results) {
-  const div = document.getElementById('results');
+function buildActionRow(resultIdx, canDelete) {
+  const svgDl    = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  const svgSel   = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>';
+  const svgTrash = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
+  const amber    = 'background:rgba(245,166,35,.1);color:var(--amber);border-color:rgba(245,166,35,.3)';
+  const parts    = [];
+  parts.push('<button class="btn-sm btn-download" onclick="downloadReport(' + resultIdx + ')">' + svgDl + 'Download report</button>');
+  if (_radarrMap !== null) parts.push('<button class="btn-sm" style="' + amber + '" onclick="selectUnmanaged(this.dataset.scope)" data-scope="radarr">' + svgSel + 'Select not in Radarr</button>');
+  if (_sonarrIds !== null) parts.push('<button class="btn-sm" style="' + amber + '" onclick="selectUnmanaged(this.dataset.scope)" data-scope="sonarr">' + svgSel + 'Select not in Sonarr</button>');
+  if (canDelete)           parts.push('<button class="btn-sm btn-delete" onclick="reviewSelected()">' + svgTrash + 'Delete selected</button>');
+  return '<div class="action-row">' + parts.join('') + '</div>';
+}
+
+function buildDeleteHint(canDelete) {
+  if (canDelete) return '';
+  return '<div class="delete-hint">'
+    + '<svg width="14" height="14" fill="none" stroke="var(--amber)" stroke-width="2" viewBox="0 0 24 24">'
+    + '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
+    + '</svg>Enter username &amp; password above and re-scan to enable deletion.</div>';
+}
+
+function makeTVItemHtml(item) {
+  const cbId     = 'cb_' + (++_cbCounter);
+  const status   = sonarrEpisodeStatus(item.path);
+  const badge    = _sonarrEpisodeFiles !== null
+    ? (status === 'managed'
+        ? '<span class="arr-badge arr-managed">✓ Sonarr</span>'
+        : '<span class="arr-badge arr-unmanaged">✗ Not in Sonarr</span>')
+    : '';
+  const tagsHtml = (item.tags || []).map(t => '<span class="emby-tag">' + t + '</span>').join('');
+  return '<li class="file-item" id="li_' + cbId + '">'
+    + '<input type="checkbox" id="' + cbId + '" class="delete-cb"'
+    + ' data-item-id="' + item.id + '"'
+    + ' data-filename="' + item.filename.replace(/"/g, '&quot;') + '"'
+    + ' data-path="' + item.path.replace(/"/g, '&quot;') + '">'
+    + '<label for="' + cbId + '" class="file-info" style="cursor:pointer">'
+    + '<div class="file-folder">'
+    + '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>'
+    + item.folder + '</div>'
+    + '<div class="file-name"><span>' + item.filename + '</span>' + tagsHtml + badge + '</div>'
+    + '</label></li>';
+}
+
+function displayTVResults(results) {
+  _tvResultsStore = results;
+  const div = document.getElementById('results-tv');
+  div.innerHTML = '';
+  _cbCounter = 0;
+
+  if (!results.length) {
+    div.innerHTML = '<div class="library-box" style="text-align:center;padding:40px">'
+      + '<div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">All clear!</div>'
+      + '<div style="color:var(--muted);font-size:.88rem">No duplicate episodes found.</div></div>';
+    return;
+  }
+
+  results.forEach((result, idx) => {
+    const box = document.createElement('div');
+    box.className = 'library-box';
+    box.style.animationDelay = idx * 0.07 + 's';
+    const canDelete = !!_userToken;
+    const resultIdx = idx;
+
+    // Group duplicate episodes by series name for display
+    const bySeries = {};
+    for (const [key, val] of Object.entries(result.dupEpisodes)) {
+      if (!bySeries[val.series]) bySeries[val.series] = [];
+      bySeries[val.series].push(val);
+    }
+
+    let innerHtml = '';
+    for (const [seriesName, dups] of Object.entries(bySeries)) {
+      innerHtml += '<div class="dup-section-label">'
+        + '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>'
+        + seriesName + ' — ' + dups.length + ' duplicate episode' + (dups.length !== 1 ? 's' : '') + '</div>';
+
+      // Sort by season/episode
+      dups.sort((a, b) => a.season - b.season || a.epNum - b.epNum);
+      dups.forEach(dup => {
+        const label = 'S' + String(dup.season).padStart(2,'0') + 'E' + String(dup.epNum).padStart(2,'0') + ' — ' + dup.name;
+        innerHtml += '<details open>'
+          + '<summary>'
+          + '<svg class="chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>'
+          + '<span>' + label + '</span>'
+          + '<span style="margin-left:auto;flex-shrink:0;font-size:.78rem;color:var(--muted);font-weight:400">' + dup.items.length + ' copies</span>'
+          + '</summary>'
+          + '<ul>' + dup.items.map(makeTVItemHtml).join('') + '</ul>'
+          + '</details>';
+      });
+    }
+
+    const actionRow = buildActionRow(resultIdx, canDelete);
+    const hint      = buildDeleteHint(canDelete);
+    box.innerHTML = '<div class="lib-header-row">'
+      + '<div class="lib-name-group">'
+      + '<div class="lib-icon-box"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 3l-4 4-4-4"/></svg></div>'
+      + '<div><div class="lib-title">' + result.libraryName + '</div><div class="lib-sub">TV library — ' + result.dupCount + ' duplicate episode' + (result.dupCount !== 1 ? 's' : '') + '</div></div>'
+      + '</div>'
+      + '<div class="pills"><span class="pill pill-amber">' + result.dupCount + ' duplicate' + (result.dupCount !== 1 ? 's' : '') + '</span></div>'
+      + '</div>'
+      + actionRow + hint + innerHtml + actionRow;
+
+    div.appendChild(box);
+  });
+}
+
+// Store results so onclick handlers can reference by index instead of embedding JSON
+let _resultsStore = [];
+let _tvResultsStore = []; // TV results store
+
+function displayResults(results, targetId = 'results-movies') {
+  _resultsStore = results;
+  const div = document.getElementById(targetId);
   div.innerHTML = '';
   _cbCounter = 0;
 
@@ -709,6 +1419,21 @@ function displayResults(results) {
     box.style.animationDelay = `${idx * 0.07}s`;
 
     const canDelete = !!_userToken;
+
+    let nameYearHtml = '';
+    if (result.nameYearCount > 0) {
+      nameYearHtml = `<div class="dup-section-label">Same title &amp; year — ${result.nameYearCount} group${result.nameYearCount !== 1 ? 's' : ''}</div>`;
+      for (const [, items] of Object.entries(result.nameYearDuplicates)) {
+        nameYearHtml += `<details open>
+          <summary>
+            <svg class="chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            <span>${items[0].name} (${items[0].year})</span>
+            <span style="margin-left:auto;font-size:.78rem;color:var(--muted);font-weight:400">${items.length} copies in different folders</span>
+          </summary>
+          <ul>${items.map(makeItemHtml).join('')}</ul>
+        </details>`;
+      }
+    }
 
     let tvdbHtml = '';
     if (result.tvdbCount > 0) {
@@ -743,7 +1468,29 @@ function displayResults(results) {
       }
     }
 
-    const safeResult = JSON.stringify(result).replace(/"/g, '&quot;');
+    let mixedHtml = '';
+    if (result.mixedCount > 0) {
+      mixedHtml = `<div class="dup-section-label">📁 Folder has managed + unmanaged files — ${result.mixedCount} folder${result.mixedCount !== 1 ? 's' : ''}</div>`;
+      for (const [folder, items] of Object.entries(result.mixedFolders)) {
+        const label = folder.length > 58 ? '…' + folder.slice(-55) : folder;
+        const managedCount   = items.filter(i => radarrStatus(i.tmdb, i.path) === 'exact').length;
+        const unmanagedCount = items.length - managedCount;
+        mixedHtml += `<details open>
+          <summary>
+            <svg class="chevron" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span>
+            <span style="margin-left:auto;flex-shrink:0;font-size:.78rem;color:var(--muted);font-weight:400">
+              ${managedCount} managed · ${unmanagedCount} unmanaged
+            </span>
+          </summary>
+          <ul>${items.map(makeItemHtml).join('')}</ul>
+        </details>`;
+      }
+    }
+
+    const resultIdx = idx;
+    const actionRowHtml  = buildActionRow(resultIdx, canDelete);
+    const deleteHintHtml = buildDeleteHint(canDelete);
 
     box.innerHTML = `
       <div class="lib-header-row">
@@ -759,35 +1506,42 @@ function displayResults(results) {
           </div>
         </div>
         <div class="pills">
-          ${result.tvdbCount   > 0 ? `<span class="pill pill-amber">${result.tvdbCount} TVDB set${result.tvdbCount   !== 1 ? 's' : ''}</span>` : ''}
-          ${result.folderCount > 0 ? `<span class="pill pill-blue">${result.folderCount} folder${result.folderCount  !== 1 ? 's' : ''}</span>` : ''}
+          ${result.tvdbCount     > 0 ? `<span class="pill pill-amber">${result.tvdbCount} TVDB set${result.tvdbCount !== 1 ? 's' : ''}</span>` : ''}
+          ${result.nameYearCount > 0 ? `<span class="pill pill-green">${result.nameYearCount} name match${result.nameYearCount !== 1 ? 'es' : ''}</span>` : ''}
+          ${result.folderCount   > 0 ? `<span class="pill pill-blue">${result.folderCount} folder${result.folderCount !== 1 ? 's' : ''}</span>` : ''}
+          ${result.mixedCount    > 0 ? `<span class="pill pill-red">${result.mixedCount} mixed folder${result.mixedCount !== 1 ? 's' : ''}</span>` : ''}
         </div>
       </div>
-      ${tvdbHtml}${folderHtml}
-      <div class="action-row">
-        <button class="btn-sm btn-download" onclick='downloadDuplicates(${safeResult})'>
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Download report
-        </button>
-        ${canDelete ? `
-        <button class="btn-sm btn-delete" onclick="reviewSelected()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-          </svg>
-          Delete selected
-        </button>` : ''}
-      </div>
-      ${!canDelete ? `<div class="delete-hint">
-        <svg width="14" height="14" fill="none" stroke="var(--amber)" stroke-width="2" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        Enter username &amp; password above and re-scan to enable deletion.
-      </div>` : ''}`;
+      ${actionRowHtml}
+      ${deleteHintHtml}
+      ${nameYearHtml}${tvdbHtml}${folderHtml}${mixedHtml}
+      ${actionRowHtml}
+    `;
 
     div.appendChild(box);
   });
+}
+
+function selectUnmanaged(scope) {
+  // scope: 'radarr' | 'sonarr'
+  // Finds all checkboxes whose parent li contains an 'arr-unmanaged' or 'arr-amber' badge
+  // and checks them, unchecking everything else in the same library box first.
+  const boxes = document.querySelectorAll('.library-box');
+  let count = 0;
+  boxes.forEach(box => {
+    box.querySelectorAll('.delete-cb').forEach(cb => {
+      const li = cb.closest('li');
+      const badges = li ? li.querySelectorAll('.arr-badge') : [];
+      let shouldCheck = false;
+      badges.forEach(badge => {
+        if (scope === 'radarr' && (badge.classList.contains('arr-unmanaged') || badge.classList.contains('arr-amber'))) shouldCheck = true;
+        if (scope === 'sonarr' && badge.classList.contains('arr-unmanaged')) shouldCheck = true;
+      });
+      cb.checked = shouldCheck;
+      if (shouldCheck) count++;
+    });
+  });
+  showToast(`${count} file${count !== 1 ? 's' : ''} selected`, count > 0 ? 'var(--amber)' : 'var(--muted)');
 }
 
 function reviewSelected() {
@@ -859,8 +1613,9 @@ async function executeDelete(items, overlay) {
       }
       if (!resp.ok && resp.status !== 204) throw new Error(lastError);
       succeeded.push(item);
+      log('Deleted: ' + item.filename, 'ok');
       document.getElementById(item.liId)?.remove();
-    } catch (e) { failed.push({ ...item, error: e.message }); }
+    } catch (e) { failed.push({ ...item, error: e.message }); log('Delete failed: ' + item.filename + ' — ' + e.message, 'err'); }
   }
 
   overlay.remove();
@@ -874,13 +1629,66 @@ async function executeDelete(items, overlay) {
   if (succeeded.length) findDuplicates(null);
 }
 
+function downloadReport(idx) {
+  // Route to correct download fn based on active tab
+  const tvActive = document.getElementById('panel-tv').classList.contains('active');
+  if (tvActive) {
+    downloadTVDuplicates(_tvResultsStore[idx]);
+  } else {
+    downloadDuplicates(_resultsStore[idx]);
+  }
+}
+
+function downloadTVDuplicates(result) {
+  if (!result) return;
+  let c = 'Emby TV Duplicates Report — ' + result.libraryName + '\nGenerated: ' + new Date().toISOString() + '\n\n';
+  c += '=== DUPLICATE EPISODES (' + result.dupCount + ') ===\n\n';
+  for (const [key, val] of Object.entries(result.dupEpisodes)) {
+    c += 'S' + String(val.season).padStart(2,'0') + 'E' + String(val.epNum).padStart(2,'0');
+    c += ' — ' + val.series + ' — ' + val.name + '\n';
+    val.items.forEach((item, i) => {
+      const s = sonarrEpisodeStatus(item.path);
+      const tag = s === 'managed' ? '[Sonarr ✓]' : '[Not in Sonarr]';
+      c += '  ' + (i+1) + '. ' + tag + ' ' + item.path + '\n';
+    });
+    c += '\n';
+  }
+  const blob = new Blob([c], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'emby_tv_' + result.libraryName.replace(/[^a-zA-Z0-9]/g, '_') + '_duplicates_' + Date.now() + '.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function downloadDuplicates(result) {
   let c = `Emby Duplicates Report — ${result.libraryName}\nGenerated: ${new Date().toISOString()}\n\n`;
+  if (result.nameYearCount > 0) {
+    c += `=== SAME TITLE & YEAR — DIFFERENT FOLDERS (${result.nameYearCount} groups) ===\n\n`;
+    for (const [, items] of Object.entries(result.nameYearDuplicates)) {
+      c += `${items[0].name} (${items[0].year}) — ${items.length} copies:\n`;
+      items.forEach((item, i) => { c += `  ${i+1}. ${item.path}\n`; });
+      c += '\n';
+    }
+  }
   if (result.tvdbCount > 0) {
     c += `=== SAME TVDB ID (${result.tvdbCount} sets) ===\n\n`;
     for (const [id, items] of Object.entries(result.tvdbDuplicates)) {
       c += `TVDB ${id} — ${items.length} copies:\n`;
       items.forEach((item, i) => { c += `  ${i+1}. "${item.name}" (${item.year})\n     ${item.path}\n`; });
+      c += '\n';
+    }
+  }
+  if (result.mixedCount > 0) {
+    c += `=== FOLDER WITH MANAGED + UNMANAGED FILES (${result.mixedCount} folders) ===\n\n`;
+    for (const [folder, items] of Object.entries(result.mixedFolders)) {
+      c += `Folder: ${folder}\n`;
+      items.forEach((item, i) => {
+        const rs = radarrStatus(item.tmdb, item.path);
+        const tag = rs === 'exact' ? '[Radarr ✓]' : rs === 'duplicate' ? '[Radarr dupe]' : '[Not in Radarr]';
+        c += `  ${i+1}. ${tag} "${item.name}" (${item.year})\n     ${item.path}\n`;
+      });
       c += '\n';
     }
   }
@@ -899,6 +1707,35 @@ function downloadDuplicates(result) {
   a.download = `emby_${result.libraryName.replace(/[^a-zA-Z0-9]/g, '_')}_duplicates_${Date.now()}.txt`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ── Activity Log ─────────────────────────────────────────────────────────────
+function toggleLog() {
+  const body = document.getElementById('log-body');
+  const chev = document.getElementById('log-chevron');
+  body.classList.toggle('open');
+  chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+function clearLog() {
+  document.getElementById('log-body').innerHTML = '';
+}
+
+function log(msg, type) {
+  // type: 'ok' | 'err' | 'info' | '' (default)
+  const body = document.getElementById('log-body');
+  if (!body) return;
+  const entry = document.createElement('div');
+  entry.className = 'log-entry ' + (type || '');
+  const time = new Date().toLocaleTimeString();
+  entry.textContent = '[' + time + '] ' + msg;
+  body.appendChild(entry);
+  body.scrollTop = body.scrollHeight;
+  // Auto-open on error
+  if (type === 'err') {
+    document.getElementById('log-body').classList.add('open');
+    document.getElementById('log-chevron').style.transform = 'rotate(180deg)';
+  }
 }
 
 window.addEventListener('DOMContentLoaded', loadCredentials);

@@ -1,20 +1,34 @@
 # 🎬 Emby Duplicate Finder
 
-A lightweight, browser-based tool that connects directly to your [Emby](https://emby.media/) media server, scans your movie libraries for duplicate files, and helps you clean them up — no backend, no database, no installation required.
+A lightweight, self-contained browser tool that connects directly to your [Emby](https://emby.media/) media server, scans your **movie and TV libraries** for duplicates, cross-references with **Radarr and Sonarr**, and helps you clean up files — no backend, no database, no installation required beyond Docker.
 
-> All requests go straight from your browser to your Emby server. Nothing is sent to any third-party service.
+> All requests go straight from your browser to your Emby/Radarr/Sonarr servers. Nothing is sent to any third-party service.
 
 ---
 
 ## Features
 
-- **TVDB duplicate detection** — flags movies that share the same TVDB metadata ID within the same folder (avoids false positives like remakes that happen to share an ID across different folders)
-- **Same-folder duplicate detection** — finds separate Emby items whose video files live in the same directory
-- **Merged-source detection** — identifies single Emby entries that have multiple video files merged into one item
-- **One-click deletion** — select files and delete them from Emby and disk via the API (requires admin credentials)
-- **Downloadable reports** — export a plain-text duplicate report per library
-- **Remember Me** — optionally persists credentials in `localStorage` for convenience
-- **Connection test** — verify your server URL and API key before scanning
+### Movies Tab
+- **Name + year duplicate detection** — normalises titles and groups by title + year across different folders
+- **TVDB duplicate detection** — flags movies sharing the same TVDB metadata ID in the same folder
+- **Same-folder duplicate detection** — finds separate Emby items whose files live in the same directory
+- **Merged-source detection** — identifies single Emby entries with multiple video files merged into one item
+- **Mixed-folder detection** — finds folders containing both Radarr-managed and unmanaged files
+- **Radarr integration** — each file is tagged ✓ Radarr (exact match), ⚠ Radarr duplicate, or ✗ Not in Radarr
+- **Select not in Radarr** — one click to select all unmanaged files for deletion
+
+### TV Shows Tab
+- **Episode-level duplicate detection** — groups by show + season + episode number, flags any with 2+ files
+- **Sonarr integration** — each file is tagged ✓ Sonarr or ✗ Not in Sonarr at the episode file level
+- **Select not in Sonarr** — one click to select all unmanaged episodes for deletion
+
+### General
+- **Emby custom tags** — displays your Emby metadata tags (Action, Horror, etc.) on each file
+- **One-click deletion** — select files and delete from Emby and disk via the API
+- **Downloadable reports** — export a plain-text duplicate report per library (Movies and TV)
+- **Activity log** — collapsible panel showing all API calls, scan results, and deletions in real time
+- **Connection test** — validates Emby, Radarr, and Sonarr connections before scanning
+- **Remember Me** — optionally persists credentials in `localStorage`
 
 ---
 
@@ -22,47 +36,13 @@ A lightweight, browser-based tool that connects directly to your [Emby](https://
 
 - An **Emby media server** (tested against Emby 4.x)
 - An **Emby API key** — Dashboard → Advanced → API Keys → New Key
-- Admin **username + password** *(only required if you want to delete files)*
+- Admin **username + password** *(only required for file deletion)*
+- *(Optional)* **Radarr** with API key — Settings → General → API Key
+- *(Optional)* **Sonarr** with API key — Settings → General → API Key
 
 ---
 
-## Running locally (no install needed)
-
-This is a pure static app — just open the HTML file in a browser.
-
-```bash
-git clone https://github.com/YOUR_USERNAME/emby-duplicate-finder.git
-cd emby-duplicate-finder
-```
-
-Then open `index.html` directly:
-
-| OS | Command |
-|----|---------|
-| macOS | `open index.html` |
-| Linux | `xdg-open index.html` |
-| Windows | Double-click `index.html` in Explorer, or `start index.html` in cmd |
-
-> No server, no `npm install`, no build step. Any modern browser works.
-
-**Optional — serve with a local HTTP server** (avoids any browser `file://` quirks):
-
-```bash
-# Python 3
-python3 -m http.server 8766
-# then open http://localhost:8766
-
-# Node (npx, no install)
-npx serve .
-```
-
----
-
-## Running with Docker
-
-Serves the app via nginx. Useful for running it persistently on a NAS, homelab server, or VM so it's always accessible on your network.
-
-### Quick start
+## Running with Docker (recommended)
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/emby-duplicate-finder.git
@@ -97,41 +77,83 @@ docker compose down && git pull && docker compose up -d --build
 
 ---
 
+## Running locally (no install needed)
+
+Everything is self-contained in `index.html` — just open it in a browser:
+
+| OS | Command |
+|----|---------|
+| macOS | `open index.html` |
+| Linux | `xdg-open index.html` |
+| Windows | Double-click `index.html` in Explorer |
+
+Or serve with a local HTTP server to avoid any browser `file://` quirks:
+
+```bash
+# Python 3
+python3 -m http.server 8766
+# then open http://localhost:8766
+```
+
+---
+
 ## Usage
 
-1. Enter your **Emby Server URL** (e.g. `http://192.168.1.10:8096`)
-2. Enter your **API Key**
-3. *(Optional)* Enter your **Username** and **Password** to enable file deletion
-4. Click **🔍 Scan for Duplicates**
-5. Browse results grouped by library — each duplicate set is expandable
-6. Check files you want to remove, then click **🗑️ Delete selected**
+### Movies
+1. Enter your **Emby Server URL** (e.g. `http://192.168.1.10:8096`) and **API Key**
+2. *(Optional)* Enter **Username** and **Password** to enable file deletion
+3. *(Optional)* Enter **Radarr URL** and **Radarr API Key**
+4. *(Optional)* Enter **Sonarr URL** and **Sonarr API Key**
+5. Click **Test Connection** to verify all services
+6. Click **Scan Movies**
+7. Browse results — each file shows its Radarr status and your Emby tags
+8. Use **Select not in Radarr** to auto-select unmanaged files, then **Delete selected**
+
+### TV Shows
+1. Fill in Emby credentials (and optionally Sonarr)
+2. Click **Scan TV Shows**
+3. Results are grouped by show → season → episode number
+4. Each file shows ✓ Sonarr or ✗ Not in Sonarr
+5. Use **Select not in Sonarr** to auto-select unmanaged episodes, then **Delete selected**
 
 ---
 
 ## Duplicate detection logic
 
-### TVDB duplicates
-Movies are grouped by their `ProviderIds.Tvdb` value. A group is only flagged if at least one folder contains **more than one copy** of that TVDB ID — this prevents remakes that share a metadata ID but live in separate folders from being incorrectly flagged.
+### Movies — Name + year
+Grouped by normalised title + year. Normalisation strips punctuation, articles (`the`/`a`/`an`), and edition words (`Extended`, `Unrated`, `Remastered`, etc.). Only flagged if copies are in **different folders**.
 
-### Same-folder duplicates
-Two sub-cases are handled:
+### Movies — TVDB ID
+Grouped by `ProviderIds.Tvdb`. Only flagged if a folder has **2+ copies** of the same TVDB ID (prevents remakes sharing an ID across different folders from being flagged).
 
-1. **Separate Emby items** — distinct library entries whose video files resolve to the same parent directory
-2. **Merged Emby items** — a single library entry with multiple `MediaSources` (Emby can merge versions of the same film); shown under a `merged:` label
+### Movies — Same folder
+Two sub-cases: (1) separate Emby items in the same directory, (2) a single Emby item with multiple `MediaSources` merged (shown as `merged:`).
+
+### Movies — Mixed folder *(Radarr required)*
+Scans all folders (not just duplicates) for any folder containing both a Radarr-managed file and an unmanaged file — the classic "manually downloaded next to a proper Radarr download" case.
+
+### TV — Duplicate episodes
+Groups by `SeriesName + Season number + Episode number`. Flags any group with 2+ files. Works across differently-named season folders (e.g. `Season 4` vs `Season 04`) since matching is done on Emby's metadata numbers, not folder names.
+
+### Radarr matching
+Radarr match requires both **filename** and **parent folder name** to match the file Radarr manages — immune to different mount paths between Radarr and Emby. Only movies where `hasFile: true` are considered managed.
+
+### Sonarr matching
+Sonarr match is done at the **episode file level** using filenames from `/api/v3/episodefile` — not just series-level TVDB IDs. This correctly identifies which specific episode files Sonarr tracks vs manual downloads.
 
 ---
 
 ## Deletion
 
-Deletion requires admin **username and password** (not just an API key) because Emby's delete-with-file endpoint requires a user-scoped token.
+Requires admin **username and password** (API key alone is not sufficient for deletion).
 
-The tool tries three API endpoints in order to handle differences across Emby 4.x versions:
+The tool tries three DELETE endpoints in order for Emby 4.x compatibility:
 
 1. `DELETE /emby/Users/{userId}/Items/{itemId}?deleteFiles=true` with `X-Emby-Token` header
 2. `DELETE /emby/Items/{itemId}?deleteFiles=true&api_key={userToken}`
 3. `DELETE /emby/Items/{itemId}?deleteFiles=true&api_key={apiKey}`
 
-After a successful deletion, the tool automatically triggers a library refresh via `POST /emby/Library/Refresh`.
+After deletion, triggers `POST /emby/Library/Refresh` automatically.
 
 > ⚠️ **Deletion is permanent.** Files are removed from disk and cannot be recovered. Always review the confirmation modal before proceeding.
 
@@ -141,44 +163,23 @@ After a successful deletion, the tool automatically triggers a library refresh v
 
 ```
 emby-duplicate-finder/
-├── index.html          # UI — layout, styles, and inline rendering logic
-├── script.js           # All API calls, duplicate detection, deletion flow
-├── styles.css          # Base styles (legacy — current styles are inlined in index.html)
-├── nginx.conf          # nginx config used by the Docker image
-├── Dockerfile          # nginx:alpine image serving the static files
+├── index.html          # The entire app — UI, styles, and all logic self-contained
+├── nginx.conf          # nginx config for the Docker image
+├── Dockerfile          # nginx:alpine serving index.html
 ├── docker-compose.yml  # One-command Docker setup
 └── .gitignore
 ```
 
-### Key functions in `script.js`
-
-| Function | Description |
-|---|---|
-| `testConnection()` | Pings `/emby/System/Info` to validate the server URL and API key |
-| `authenticateUser()` | POST to `/emby/Users/AuthenticateByName`, returns access token + user ID |
-| `findDuplicates()` | Main entry point — fetches libraries, iterates movies, runs detection, renders |
-| `fetchLibraries()` | `GET /emby/Library/VirtualFolders` — lists all virtual libraries |
-| `fetchMoviesFromLibrary()` | Paginates `GET /emby/Items` (100/page) to fetch all movies in a library |
-| `findTvdbDuplicates()` | Groups movies by TVDB ID; flags groups with 2+ copies in the same folder |
-| `findSameFolderDuplicates()` | Groups by folder path; detects both separate items and merged multi-source entries |
-| `reviewSelected()` | Builds the confirmation modal listing selected files |
-| `executeDelete()` | Tries 3 DELETE endpoints in order; triggers library refresh on success |
-| `downloadDuplicates()` | Generates and downloads a `.txt` report for a library |
-
----
-
-## Supported video formats
-
-`mkv` · `mp4` · `avi` · `m4v` · `mov` · `wmv` · `ts` · `m2ts` · `mpg` · `mpeg` · `flv` · `webm` · `iso` · `rmvb`
+> `script.js` and `styles.css` are legacy files from the original version — they are no longer used. Everything is inlined in `index.html`.
 
 ---
 
 ## Security notes
 
-- **Remember Me** stores credentials only in the browser's own `localStorage` — they never leave your machine
-- The API key and user token are held in memory only for the duration of the page session
-- No backend server is involved; all requests go directly from your browser to your Emby instance
-- The Docker image is a read-only nginx static file server — no write access, no environment secrets needed
+- **Remember Me** stores credentials only in your browser's `localStorage` — they never leave your machine
+- API keys and tokens are held in memory for the page session only
+- All requests go directly from your browser to your Emby/Radarr/Sonarr instances
+- The Docker image is a read-only nginx static file server — no write access, no secrets needed
 
 ---
 
@@ -190,4 +191,4 @@ Any modern browser with `fetch` and `localStorage` support: Chrome, Firefox, Edg
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT
