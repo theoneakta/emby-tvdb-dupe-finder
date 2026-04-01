@@ -1,0 +1,13 @@
+services:
+  emby-duplicate-finder:
+    build: .
+    container_name: emby-duplicate-finder
+    restart: unless-stopped
+    ports:
+      - "8766:80"          # Left side = host port — change to any free port you like
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
