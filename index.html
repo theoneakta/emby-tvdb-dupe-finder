@@ -1215,6 +1215,12 @@ function normaliseName(name) {
         .trim();
 }
 
+// Extract year from folder name e.g. "/movies/The Addams Family (2019)" → 2019
+function folderYear(folderPath) {
+    const m = (folderPath || '').match(/\((\d{4})\)\s*$/);
+    return m ? parseInt(m[1], 10) : null;
+}
+
 function findNameYearDuplicates(movies) {
     const byKey = {};
     movies.forEach(movie => {
@@ -1230,6 +1236,27 @@ function findNameYearDuplicates(movies) {
         if (items.length < 2) continue;
         const folders = new Set(items.map(i => i.folder));
         if (folders.size < 2) continue;
+
+        // Check 1: if IMDB/TMDB IDs are present and differ → different movies
+        const withImdb = items.filter(i => i.imdb);
+        if (withImdb.length >= 2) {
+            const imdbIds = new Set(withImdb.map(i => i.imdb));
+            if (imdbIds.size > 1) continue;
+        }
+        const withTmdb = items.filter(i => i.tmdb);
+        if (withTmdb.length >= 2) {
+            const tmdbIds = new Set(withTmdb.map(i => i.tmdb));
+            if (tmdbIds.size > 1) continue;
+        }
+
+        // Check 2: if folder names contain different years → different movies
+        // e.g. metadata says 1991 for both, but one folder says (2019)
+        const folderYears = items.map(i => folderYear(i.folder)).filter(y => y !== null);
+        if (folderYears.length >= 2) {
+            const uniqueFolderYears = new Set(folderYears);
+            if (uniqueFolderYears.size > 1) continue; // folders disagree on year → skip
+        }
+
         out[key] = items;
     }
     return out;
