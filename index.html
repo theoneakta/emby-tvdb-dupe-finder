@@ -222,6 +222,7 @@ details ul { padding: 0; margin: 0; }
 .file-name a { font-size: .72rem; font-weight: 500; color: var(--blue); text-decoration: none; padding: 1px 7px; background: var(--blue-dim); border-radius: 5px; }
 .file-name a:hover { text-decoration: underline; }
 .year-badge { background: rgba(255,255,255,.06); color: var(--muted); font-size: .72rem; font-weight: 600; padding: 1px 8px; border-radius: 6px; }
+.res-badge { font-size: .72rem; font-weight: 700; padding: 1px 8px; border-radius: 6px; border: 1px solid; }
 .emby-tag { background: rgba(59,142,243,.12); color: var(--blue); border: 1px solid rgba(59,142,243,.25); font-size: .68rem; font-weight: 700; padding: 1px 8px; border-radius: 5px; white-space: nowrap; }
 
 .action-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
@@ -1035,7 +1036,7 @@ async function fetchLibraries(url, key) {
 async function fetchMoviesFromLibrary(url, key, libraryId) {
   let all = [], start = 0;
   while (true) {
-    const resp = await fetch(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Movie&Fields=Path,ProductionYear,ProviderIds,MediaSources,Tags&StartIndex=${start}&Limit=100&api_key=${key}`);
+    const resp = await fetch(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Movie&Fields=Path,ProductionYear,ProviderIds,MediaSources,Tags,Height,Width,MediaStreams&StartIndex=${start}&Limit=100&api_key=${key}`);
     if (!resp.ok) throw new Error(`Movies fetch failed (${resp.status})`);
     const data = await resp.json();
     all = all.concat(data.Items || []);
@@ -1093,13 +1094,47 @@ function findDuplicateEpisodes(episodes) {
   }
   return out;
 }
+function resFromDimensions(w, h) {
+  // Use width as primary signal — widescreen films have short height (e.g. 800px for 1080p 2.40:1)
+  if (w >= 3840 || h >= 2160) return { label: '4K',    rank: 5, color: '#a855f7' };
+  if (w >= 1920 || h >= 1080) return { label: '1080p', rank: 4, color: '#3b8ef3' };
+  if (w >= 1280 || h >=  720) return { label: '720p',  rank: 3, color: '#52b54b' };
+  if (w >=  720 || h >=  480) return { label: '480p',  rank: 2, color: '#f5a623' };
+  return { label: (h || w) + 'p', rank: 1, color: '#6e8aaa' };
+}
+
+function getResolution(movie) {
+  // 1. MediaSources → MediaStreams video stream (most accurate)
+  for (const ms of (movie.MediaSources || [])) {
+    const video = (ms.MediaStreams || []).find(s => s.Type === 'Video');
+    if (video && (video.Width >= 100 || video.Height >= 100)) {
+      return resFromDimensions(video.Width || 0, video.Height || 0);
+    }
+  }
+
+  // 2. Item-level Width/Height
+  if (movie.Width >= 100 || movie.Height >= 100) {
+    return resFromDimensions(movie.Width || 0, movie.Height || 0);
+  }
+
+  // 3. Filename fallback
+  const fname = (movie.Path || '').replace(/\\/g, '/').split('/').pop().toLowerCase();
+  if (/\b(2160p|4k|uhd)\b/.test(fname)) return { label: '4K',    rank: 5, color: '#a855f7' };
+  if (/\b1080p\b/.test(fname))           return { label: '1080p', rank: 4, color: '#3b8ef3' };
+  if (/\b720p\b/.test(fname))            return { label: '720p',  rank: 3, color: '#52b54b' };
+  if (/\b480p\b/.test(fname))            return { label: '480p',  rank: 2, color: '#f5a623' };
+
+  return null;
+}
+
 function movieToEntry(movie) {
   const sourcePaths = (movie.MediaSources || []).map(s => s.Path).filter(Boolean);
   const path = movie.Path || sourcePaths[0] || '';
   const parts = path.replace(/\\/g, '/').split('/');
   const filename = parts.pop() || path;
   const folder = parts.join('/');
-  return { id: movie.Id, name: movie.Name || 'Unknown', path, folder, filename, year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || '', tmdb: movie.ProviderIds?.Tmdb || '', tvdb: movie.ProviderIds?.Tvdb || '', tags: (movie.TagItems || []).map(t => t.Name) };
+  const res = getResolution(movie);
+  return { id: movie.Id, name: movie.Name || 'Unknown', path, folder, filename, year: movie.ProductionYear || 'N/A', imdb: movie.ProviderIds?.Imdb || '', tmdb: movie.ProviderIds?.Tmdb || '', tvdb: movie.ProviderIds?.Tvdb || '', tags: (movie.TagItems || []).map(t => t.Name), resolution: res };
 }
 
 function getFolder(p) {
@@ -1302,6 +1337,7 @@ function makeItemHtml(item) {
         <div class="file-name">
           <span>${item.filename}</span>
           ${item.year !== 'N/A' ? `<span class="year-badge">${item.year}</span>` : ''}
+          ${item.resolution ? `<span class="res-badge" style="color:${item.resolution.color};border-color:${item.resolution.color}44;background:${item.resolution.color}18">${item.resolution.label}</span>` : ''}
           ${tagsHtml}
           ${arrBadge(item)}
           ${imdbLink}
