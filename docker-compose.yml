@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     ports:
       - "8766:80"          # Left side = host port — change to any free port you like
+    env_file:
+      - .env               # Copy .env.example → .env and fill in your values
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
       interval: 30s
