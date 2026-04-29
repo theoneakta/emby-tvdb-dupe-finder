@@ -1,7 +1,7 @@
 services:
-  emby-duplicate-finder:
+  emby-tvdb-dupe-finder:
     build: .
-    container_name: emby-duplicate-finder
+    container_name: emby-tvdb-dupe-finder
     restart: unless-stopped
     ports:
       - "8766:80"          # Left side = host port — change to any free port you like
