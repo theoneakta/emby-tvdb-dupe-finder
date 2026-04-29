@@ -461,7 +461,7 @@ footer a:hover { color: var(--green); }
   <div class="remember-row">
     <input type="checkbox" id="rememberMe">
     <label for="rememberMe">Remember me</label>
-    <small>(credentials saved in browser only)</small>
+    <small>(credentials including password saved unencrypted in browser localStorage — only use on a trusted device)</small>
   </div>
 
   <div class="divider"></div>
@@ -596,6 +596,20 @@ let _radarrMap = null;  // Map of tmdbId → normalized file path for movies Rad
 let _sonarrIds = null;          // Set of TVDB ID strings managed by Sonarr series
 let _sonarrEpisodeFiles = null; // Map of filename→data for episode files Sonarr manages
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: ctrl.signal });
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error(`Request timed out after ${timeoutMs / 1000}s — is the server reachable?`);
+    if (e instanceof TypeError) throw new Error(`Network error (possible CORS issue) — check that the server URL is correct and reachable from your browser: ${e.message}`);
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -714,7 +728,7 @@ async function testConnection(event) {
   let embyRow = pendingRow('Emby', embyUrl);
   try {
     const base = embyUrl.startsWith('http') ? embyUrl : 'http://' + embyUrl;
-    const resp = await fetch(`${base}/emby/System/Info?api_key=${embyKey}`);
+    const resp = await fetchWithTimeout(`${base}/emby/System/Info?api_key=${embyKey}`);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
     const data = await resp.json();
     embyRow.replaceWith(addRow('Emby', 'ok',
@@ -728,11 +742,11 @@ async function testConnection(event) {
     let radarrRow = pendingRow('Radarr', radarrUrl);
     try {
       const base = radarrUrl.replace(/\/+$/, '');
-      const resp = await fetch(`${base}/api/v3/system/status?apikey=${radarrKey}`);
+      const resp = await fetchWithTimeout(`${base}/api/v3/system/status?apikey=${radarrKey}`);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
       const data = await resp.json();
       // Also get movie count (hasFile only)
-      const movResp = await fetch(`${base}/api/v3/movie?apikey=${radarrKey}`);
+      const movResp = await fetchWithTimeout(`${base}/api/v3/movie?apikey=${radarrKey}`);
       const movies  = movResp.ok ? await movResp.json() : [];
       const total   = movies.length;
       const hasFile = movies.filter(m => m.hasFile && m.movieFile?.path).length;
@@ -750,10 +764,10 @@ async function testConnection(event) {
     let sonarrRow = pendingRow('Sonarr', sonarrUrl);
     try {
       const base = sonarrUrl.replace(/\/+$/, '');
-      const resp = await fetch(`${base}/api/v3/system/status?apikey=${sonarrKey}`);
+      const resp = await fetchWithTimeout(`${base}/api/v3/system/status?apikey=${sonarrKey}`);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
       const data = await resp.json();
-      const serResp = await fetch(`${base}/api/v3/series?apikey=${sonarrKey}`);
+      const serResp = await fetchWithTimeout(`${base}/api/v3/series?apikey=${sonarrKey}`);
       const series  = serResp.ok ? await serResp.json() : [];
       sonarrRow.replaceWith(addRow('Sonarr', 'ok',
         `v${data.version} · ${series.length} series monitored`));
@@ -766,7 +780,7 @@ async function testConnection(event) {
 }
 
 async function authenticateUser(embyServerUrl, username, password) {
-  const resp = await fetch(`${embyServerUrl}/emby/Users/AuthenticateByName`, {
+  const resp = await fetchWithTimeout(`${embyServerUrl}/emby/Users/AuthenticateByName`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -789,7 +803,7 @@ async function fetchRadarrMap(baseUrl, apiKey) {
   // GET /api/v3/movie — build a Map of tmdbId → exact file path for movies Radarr has on disk
   // Movies that are monitored but not downloaded (hasFile:false) are excluded entirely
   const url = baseUrl.replace(/\/+$/, '');
-  const resp = await fetch(`${url}/api/v3/movie?apikey=${apiKey}`);
+  const resp = await fetchWithTimeout(`${url}/api/v3/movie?apikey=${apiKey}`);
   if (!resp.ok) throw new Error(`Radarr: HTTP ${resp.status}`);
   const movies = await resp.json();
   const map = new Map();
@@ -806,14 +820,14 @@ async function fetchSonarrData(baseUrl, apiKey) {
   const url = baseUrl.replace(/\/+$/, '');
 
   // Fetch all series (for movie-style badge on series level)
-  const seriesResp = await fetch(`${url}/api/v3/series?apikey=${apiKey}`);
+  const seriesResp = await fetchWithTimeout(`${url}/api/v3/series?apikey=${apiKey}`);
   if (!seriesResp.ok) throw new Error(`Sonarr: HTTP ${seriesResp.status}`);
   const seriesData = await seriesResp.json();
   const seriesIds = new Set();
   seriesData.forEach(s => { if (s.tvdbId) seriesIds.add(String(s.tvdbId)); });
 
   // Fetch all episode files (for episode-level matching)
-  const efResp = await fetch(`${url}/api/v3/episodefile?apikey=${apiKey}`);
+  const efResp = await fetchWithTimeout(`${url}/api/v3/episodefile?apikey=${apiKey}`);
   const episodeFiles = new Map();
   if (efResp.ok) {
     const files = await efResp.json();
@@ -1027,7 +1041,7 @@ function setError(msg, stack) {
 }
 
 async function fetchLibraries(url, key) {
-  const resp = await fetch(`${url}/emby/Library/VirtualFolders?api_key=${key}`);
+  const resp = await fetchWithTimeout(`${url}/emby/Library/VirtualFolders?api_key=${key}`);
   if (!resp.ok) throw new Error(`Libraries fetch failed (${resp.status}): ${resp.statusText}`);
   const data = await resp.json();
   return Array.isArray(data) ? data : [];
@@ -1036,26 +1050,25 @@ async function fetchLibraries(url, key) {
 async function fetchMoviesFromLibrary(url, key, libraryId) {
   let all = [], start = 0;
   while (true) {
-    const resp = await fetch(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Movie&Fields=Path,ProductionYear,ProviderIds,MediaSources,Tags,Height,Width,MediaStreams&StartIndex=${start}&Limit=100&api_key=${key}`);
+    const resp = await fetchWithTimeout(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Movie&Fields=Path,ProductionYear,ProviderIds,MediaSources,Tags,Height,Width,MediaStreams&StartIndex=${start}&Limit=500&api_key=${key}`);
     if (!resp.ok) throw new Error(`Movies fetch failed (${resp.status})`);
     const data = await resp.json();
     all = all.concat(data.Items || []);
-    if (!data.TotalRecordCount || (data.Items || []).length < 100) break;
-    start += 100;
+    if (!data.TotalRecordCount || (data.Items || []).length < 500) break;
+    start += 500;
   }
   return all;
 }
 
 async function fetchEpisodesFromLibrary(url, key, libraryId) {
-  // Fetch Episode items — each episode has SeriesName, ParentIndexNumber (season), IndexNumber (episode)
   let all = [], start = 0;
   while (true) {
-    const resp = await fetch(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Episode&Fields=Path,ProviderIds,MediaSources,SeriesName,ParentIndexNumber,IndexNumber,Tags&StartIndex=${start}&Limit=100&api_key=${key}`);
+    const resp = await fetchWithTimeout(`${url}/emby/Items?Recursive=true&ParentId=${libraryId}&IncludeItemTypes=Episode&Fields=Path,ProviderIds,MediaSources,SeriesName,ParentIndexNumber,IndexNumber,Tags&StartIndex=${start}&Limit=500&api_key=${key}`);
     if (!resp.ok) throw new Error(`TV fetch failed (${resp.status})`);
     const data = await resp.json();
     all = all.concat(data.Items || []);
-    if (!data.TotalRecordCount || (data.Items || []).length < 100) break;
-    start += 100;
+    if (!data.TotalRecordCount || (data.Items || []).length < 500) break;
+    start += 500;
   }
   return all;
 }
