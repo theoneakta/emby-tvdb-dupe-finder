@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background -->
+  <rect width="100" height="100" rx="20" fill="#0d1520"/>
+
+  <!-- Film strip — back (amber, slightly offset top-left) -->
+  <rect x="12" y="22" width="54" height="38" rx="6" fill="#1a2840" stroke="#f5a623" stroke-width="2"/>
+  <!-- Sprocket holes left -->
+  <rect x="12" y="27" width="6" height="5" rx="1.5" fill="#f5a623"/>
+  <rect x="12" y="36" width="6" height="5" rx="1.5" fill="#f5a623"/>
+  <rect x="12" y="45" width="6" height="5" rx="1.5" fill="#f5a623"/>
+  <!-- Sprocket holes right -->
+  <rect x="60" y="27" width="6" height="5" rx="1.5" fill="#f5a623"/>
+  <rect x="60" y="36" width="6" height="5" rx="1.5" fill="#f5a623"/>
+  <rect x="60" y="45" width="6" height="5" rx="1.5" fill="#f5a623"/>
+
+  <!-- Film strip — front (green, offset bottom-right) -->
+  <rect x="26" y="36" width="54" height="38" rx="6" fill="#131f2e" stroke="#52b54b" stroke-width="2.2"/>
+  <!-- Sprocket holes left -->
+  <rect x="26" y="41" width="6" height="5" rx="1.5" fill="#52b54b"/>
+  <rect x="26" y="50" width="6" height="5" rx="1.5" fill="#52b54b"/>
+  <rect x="26" y="59" width="6" height="5" rx="1.5" fill="#52b54b"/>
+  <!-- Sprocket holes right -->
+  <rect x="74" y="41" width="6" height="5" rx="1.5" fill="#52b54b"/>
+  <rect x="74" y="50" width="6" height="5" rx="1.5" fill="#52b54b"/>
+  <rect x="74" y="59" width="6" height="5" rx="1.5" fill="#52b54b"/>
+
+  <!-- Magnifying glass (bottom-right, punches through both strips) -->
+  <circle cx="70" cy="70" r="16" fill="#0d1520"/>
+  <circle cx="70" cy="70" r="13" fill="#131f2e" stroke="#52b54b" stroke-width="2.5"/>
+  <line x1="80" y1="80" x2="90" y2="90" stroke="#52b54b" stroke-width="4" stroke-linecap="round"/>
+  <!-- "×2" duplicate indicator inside lens -->
+  <text x="70" y="75" font-family="monospace" font-size="12" font-weight="700"
+        fill="#52b54b" text-anchor="middle" dominant-baseline="middle">×2</text>
+</svg>
