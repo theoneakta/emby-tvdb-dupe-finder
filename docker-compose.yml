@@ -1,5 +1,6 @@
 services:
   emby-tvdb-dupe-finder:
+    image: ghcr.io/theoneakta/emby-tvdb-dupe-finder:latest
     build: .
     container_name: emby-tvdb-dupe-finder
     restart: unless-stopped
@@ -13,3 +14,14 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=300   # check every 5 minutes
+      - WATCHTOWER_CLEANUP=true        # remove old images after update
+    command: emby-tvdb-dupe-finder     # only watch this container
